@@ -30,3 +30,13 @@
 
 # Debug files
 *.dSYM/
+
+# Autotools files
+*.cache
+*.log
+*.status
+
+# vim files
+*.swp
+~*
+un.*

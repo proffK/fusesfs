@@ -86,8 +86,8 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = mkfs.sfs$(EXEEXT)
-subdir = src/mkfs
+bin_PROGRAMS = mksfs$(EXEEXT)
+subdir = src/mksfs
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -99,9 +99,9 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_mkfs_sfs_OBJECTS = main.$(OBJEXT)
-mkfs_sfs_OBJECTS = $(am_mkfs_sfs_OBJECTS)
-mkfs_sfs_LDADD = $(LDADD)
+am_mksfs_OBJECTS = main.$(OBJEXT)
+mksfs_OBJECTS = $(am_mksfs_OBJECTS)
+mksfs_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -130,8 +130,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(mkfs_sfs_SOURCES)
-DIST_SOURCES = $(mkfs_sfs_SOURCES)
+SOURCES = $(mksfs_SOURCES)
+DIST_SOURCES = $(mksfs_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -242,7 +242,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-mkfs_sfs_SOURCES = main.c
+mksfs_SOURCES = main.c
 all: all-am
 
 .SUFFIXES:
@@ -256,9 +256,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu src/mkfs/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu src/mksfs/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu src/mkfs/Makefile
+	  $(AUTOMAKE) --gnu src/mksfs/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
@@ -319,9 +319,9 @@ uninstall-binPROGRAMS:
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
 
-mkfs.sfs$(EXEEXT): $(mkfs_sfs_OBJECTS) $(mkfs_sfs_DEPENDENCIES) $(EXTRA_mkfs_sfs_DEPENDENCIES) 
-	@rm -f mkfs.sfs$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(mkfs_sfs_OBJECTS) $(mkfs_sfs_LDADD) $(LIBS)
+mksfs$(EXEEXT): $(mksfs_OBJECTS) $(mksfs_DEPENDENCIES) $(EXTRA_mksfs_DEPENDENCIES) 
+	@rm -f mksfs$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(mksfs_OBJECTS) $(mksfs_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
