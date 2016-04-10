@@ -40,3 +40,6 @@
 *.swp
 ~*
 un.*
+
+# for our program
+src/mksfs/mksfs
