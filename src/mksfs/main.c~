@@ -117,7 +117,7 @@ int main(int argc, char* argv[]) {
                 block_size = DEFAULT_BLOCK_SIZE;
         else {
                 block_size = convert_size(block_size_s, 0);
-                if (block_size <= DEFAULT_BLOCK_SIZE/2 ) {
+                if (block_size <= MIN_BLOCK_SIZE/2 ) {
                         fprintf(stderr, "Invalid block size.\n");
                         usage(EXIT_NOBS);
                 }
