@@ -15,7 +15,6 @@
 #include <ctype.h>
 
 #include <mksfs/mksfs.h>
-//#include "mksfs.h"
 
 static void usage(unsigned status);
 static ssize_t convert_size(char* parameter, off_t file_s);
@@ -73,7 +72,6 @@ int main(int argc, char* argv[]) {
          */
         int fd = open(argv[argc - 1], O_RDWR);
         if (fd == -1) {
-                close(fd);
                 fprintf(stderr, "Invalid input file/device.\n");
                 usage(EXIT_INPFILE);
         }
@@ -105,7 +103,7 @@ int main(int argc, char* argv[]) {
                                         " size.\n");
                         usage(EXIT_MDLRG);
                 }
-                if (md_size < FS_ENTRY_SIZE * 2) {
+                if (md_size < METADATA_MIN_SIZE) {
                         fprintf(stderr, "Metadata part size too small.\n");
                         usage(EXIT_MDSML);
                 }
@@ -119,17 +117,17 @@ int main(int argc, char* argv[]) {
                 block_size = DEFAULT_BLOCK_SIZE;
         else {
                 block_size = convert_size(block_size_s, 0);
-                if (block_size <= 128) {
+                if (block_size <= MIN_BLOCK_SIZE/2 ) {
                         fprintf(stderr, "Invalid block size.\n");
                         usage(EXIT_NOBS);
                 }
                 long int divisor = DEFAULT_MIN_BLOCK;
-
+                /* Check on the power of two */
                 while (divisor > 0 && (divisor != block_size)) 
                         divisor <<= 1;
 
                 if (divisor < 0) {
-                        fprintf(stderr, "Block size isn't degree of 2.\n");
+                        fprintf(stderr, "Block size isn't the power of 2.\n");
                         usage(EXIT_BSDGR2);
                 }
         }
@@ -144,9 +142,10 @@ int main(int argc, char* argv[]) {
         /*
          * Handler label name
          */
-        if (label != NULL && strlen(label) > 51) {
-                fprintf(stderr, "Label shouldn't be longer"
-                                " than 51 symbols.\n");
+        if (label != NULL && strlen(label) >= VOLUME_NAME_SIZE) {
+                fprintf(stderr, "%s %ld %s", "Label shouldn't be longer"
+                                " than ", VOLUME_NAME_SIZE - 1,
+                                " symbols.\n");
                 usage(EXIT_LBL);
         }
         /*
