@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
                 usage(EXIT_FAILURE);
         }
         /* Get user options */
-        while ((opt = getopt_long(argc, argv, "hm:b:l:", 
+        while ((opt = getopt_long(argc - 1, argv, "hm:b:l:", 
                 long_options, NULL)) != -1) {
                 switch (opt) {    
                 case 'h':
