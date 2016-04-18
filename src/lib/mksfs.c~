@@ -15,7 +15,7 @@ int image_create(struct sfs_options sfs_opts) {
         fprintf(stdout, "\nTime stamp: %s"
                         "Data size: %lu blocks\n"
                         "Index size: %lu bytes\n"
-                        "Total blocks: %lu blocks\n"
+                        "Total blocks: %lu\n"
                         "Block size: %lu bytes\n"
                         "Label: %s\n"
                         "File name: %s\n", 

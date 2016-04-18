@@ -97,6 +97,10 @@ libblock_a_AR = $(AR) $(ARFLAGS)
 libblock_a_LIBADD =
 am_libblock_a_OBJECTS = filedev.$(OBJEXT)
 libblock_a_OBJECTS = $(am_libblock_a_OBJECTS)
+libmksfs_a_AR = $(AR) $(ARFLAGS)
+libmksfs_a_LIBADD =
+am_libmksfs_a_OBJECTS = mksfs.$(OBJEXT)
+libmksfs_a_OBJECTS = $(am_libmksfs_a_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -125,8 +129,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libblock_a_SOURCES)
-DIST_SOURCES = $(libblock_a_SOURCES)
+SOURCES = $(libblock_a_SOURCES) $(libmksfs_a_SOURCES)
+DIST_SOURCES = $(libblock_a_SOURCES) $(libmksfs_a_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -244,8 +248,9 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-noinst_LIBRARIES = libblock.a
-libblock_a_SOURCES = filedev.c
+noinst_LIBRARIES = libblock.a libmksfs.a 
+libblock_a_SOURCES = filedev.c 
+libmksfs_a_SOURCES = mksfs.c
 AM_CFLAGS = -O2 -I$(top_srcdir)/src/include
 all: all-am
 
@@ -290,6 +295,11 @@ libblock.a: $(libblock_a_OBJECTS) $(libblock_a_DEPENDENCIES) $(EXTRA_libblock_a_
 	$(AM_V_AR)$(libblock_a_AR) libblock.a $(libblock_a_OBJECTS) $(libblock_a_LIBADD)
 	$(AM_V_at)$(RANLIB) libblock.a
 
+libmksfs.a: $(libmksfs_a_OBJECTS) $(libmksfs_a_DEPENDENCIES) $(EXTRA_libmksfs_a_DEPENDENCIES) 
+	$(AM_V_at)-rm -f libmksfs.a
+	$(AM_V_AR)$(libmksfs_a_AR) libmksfs.a $(libmksfs_a_OBJECTS) $(libmksfs_a_LIBADD)
+	$(AM_V_at)$(RANLIB) libmksfs.a
+
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -297,6 +307,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filedev.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mksfs.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

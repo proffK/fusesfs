@@ -312,7 +312,7 @@ target_alias =
 top_build_prefix = 
 top_builddir = .
 top_srcdir = .
-SUBDIRS = src/mksfs . src/lib tests
+SUBDIRS = src/lib src/mksfs . tests
 AM_CFLAGS = -I$(top_srcdir)/src/include
 dist_doc_DATA = README
 all: config.h
