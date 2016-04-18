@@ -1,0 +1,20 @@
+#ifndef MKSFS_H
+#define MKSFS_H
+
+#define VOLUME_NAME_SIZE 52
+#define DEFAULT_BLOCK_SIZE 512
+#define DEFAULT_METADATA_PERCENT 5
+
+/*
+ * Main struct, that describe options for creation 
+ * a SFS file system
+ */
+struct sfs_options {
+    unsigned md_size;
+    unsigned block_size;
+    char[VOLUME_NAME_SIZE] label;
+    char* file_name;
+};
+
+
+#endif
