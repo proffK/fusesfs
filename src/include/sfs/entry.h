@@ -1,0 +1,99 @@
+#ifndef _SFS_ENTRY_
+#define _SFS_ENTRY_
+#include <stdint.h>
+
+#define INDEX_ENTRY_SIZE 64
+
+enum entry_type {
+        VOL_IDENT      = 0x01,
+        START_ENTRY    = 0x02,
+        UNUSED_ENTRY   = 0x10,
+        DIR_ENTRY      = 0x11,
+        FILE_ENTRY     = 0x12,
+        UNUSABLE_ENTRY = 0x18,
+        DEL_DIR_ENTRY  = 0x19,
+        DEL_FILE_ENTRY = 0x1A
+};
+
+struct entry_t {
+        uint8_t data[INDEX_ENTRY_SIZE];
+};
+
+typedef struct {
+        uint8_t entry_type; 
+        uint8_t reserved[3]; 
+        uint64_t time_stamp;
+        uint8_t vol_label[52];
+} vol_ident_entry;
+
+typedef struct {
+        uint8_t entry_type;
+        uint8_t reserved[63];
+} start_entry;
+
+typedef struct {
+        uint8_t entry_type;
+        uint8_t reserved[63];
+} unused_entry;
+
+typedef struct {
+        uint8_t entry_type;
+        uint8_t cont_entries;
+        uint64_t time_stamp;
+        uint8_t dir_name[54];
+} dir_entry;
+
+typedef struct {
+        uint8_t entry_type;
+        uint8_t cont_entries;
+        uint64_t time_stamp;
+        uint64_t start_block;
+        uint64_t end_block;
+        uint64_t size;typedef struct {
+        uint8_t entry_type;
+        uint8_t cont_entries;
+        uint64_t time_stamp;
+        uint8_t dir_name[54];
+} dir_entry;
+
+typedef struct {
+        uint8_t entry_type;
+        uint8_t cont_entries;
+        uint64_t time_stamp;
+        uint64_t start_block;
+        uint64_t end_block;
+        uint64_t size;
+        uint8_t name[30];
+} file_entry;
+
+
+typedef struct {
+        uint8_t entry_type;
+        uint8_t unused[9];
+        uint64_t start_block;
+        uint64_t end_block;
+        uint8_t reserved[38];
+} unusable_entry;
+
+typedef struct {
+        uint8_t entry_type;
+        uint8_t cont_entries;
+        uint64_t time_stamp;
+        uint8_t dir_name[54];
+} del_dir_entry;
+
+typedef struct {
+        uint8_t entry_type;
+        uint8_t cont_entries;
+        uint64_t time_stamp;
+        uint64_t start_block;
+        uint64_t end_block;
+        uint64_t size;
+        uint8_t name[30];
+} del_file_entry;
+
+typedef struct {
+        uint8_t name[64];
+} cont_entry;
+
+#endif 
