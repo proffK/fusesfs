@@ -11,8 +11,6 @@
 #define FDEV ((filedev_data*) bdev->dev_data)
 static int filedev_init(blockdev* bdev) 
 {
-        int fd = 0;
-
         errno = 0;
 
         if (FDEV->filename == NULL) {
@@ -20,13 +18,12 @@ static int filedev_init(blockdev* bdev)
                 return -1;
         }
         
-        if (fd == -1) 
-                fd = open(FDEV->filename, O_RDWR);
+        if (FDEV->fd == -1) 
+                FDEV->fd = open(FDEV->filename, O_RDWR);
 
-        if (fd == -1) 
+        if (FDEV->fd == -1) 
                 return -1;
 
-        FDEV->fd = fd;
         return 0;
 }
 
@@ -58,6 +55,12 @@ static size_t filedev_read(blockdev* bdev, buf_t* buf,
         }
 
         start_pos = block_num * bdev->block_size;
+
+        if (start_pos + buf_size > bdev->size) {
+                errno = EINVAL;
+                return 0;
+        }
+
         start_pos = lseek(FDEV->fd, start_pos, SEEK_SET);
 
         if (start_pos == -1) 
@@ -139,7 +142,7 @@ int filedev_dump(blockdev* fdev, int fd)
                         fdev->init);
 
         if (size < 0) 
-          return -1;
+                return -1;
 
         debug_msg[size] = '\0';
 
