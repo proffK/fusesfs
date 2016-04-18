@@ -1,22 +1,27 @@
-#include "sys/types.h"
-#include "stdlib.h"
+#include <sys/types.h>
+#include <stdlib.h>
+#include <time.h>
+#include <stdio.h>
+#include <math.h>
 
-#include "mksfs/mksfs.h"
+#include <mksfs/mksfs.h>
 
-#include "stdio.h"
 
 int image_create(struct sfs_options sfs_opts) {
-        fprintf(stderr, "Dump of struct: \n"
-                        "time stamp %lu\n"
-                        "data size %lu\n"
-                        "index size %lu\n"
-                        "total_block %lu\n"
-                        "block_size %lu\n"
-                        "label %s\n"
-                        "file name %s\n", 
-                        sfs_opts.time_stamp, sfs_opts.data_size,
+        size_t block_size = pow(2, sfs_opts.block_size + BEGIN_POWER_OF_BS);
+        /*
+         * Print volume info 
+         */
+        fprintf(stdout, "\nTime stamp: %s"
+                        "Data size: %lu blocks\n"
+                        "Index size: %lu bytes\n"
+                        "Total blocks: %lu\n"
+                        "Block size: %lu bytes\n"
+                        "Label: %s\n"
+                        "File name: %s\n", 
+                        ctime(&(sfs_opts.time_stamp)), sfs_opts.data_size,
                         sfs_opts.index_size, sfs_opts.total_block,
-                        sfs_opts.block_size, sfs_opts.label,
+                        block_size, sfs_opts.label,
                         sfs_opts.file_name); 
                               
 

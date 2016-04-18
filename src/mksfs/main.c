@@ -162,7 +162,6 @@ int main(int argc, char* argv[]) {
                                 " symbols.\n");
                 usage(EXIT_LBL);
         }
-        fprintf(stderr, "len: %d\n", length);
         /* Check on unsupported symbols */ 
         for (i = 0; i < length; i++)
                 if (label[i] < 0x20 || (label[i] >= 0x80 && label[i] <= 0x9F) 
