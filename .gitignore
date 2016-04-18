@@ -39,6 +39,7 @@
 # vim files
 *.swp
 ~*
+*~
 un.*
 
 # for our program
