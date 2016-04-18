@@ -75,8 +75,10 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-TESTS = check_block$(EXEEXT)
-check_PROGRAMS = check_block$(EXEEXT)
+TESTS = check_block_write$(EXEEXT) check_block_read$(EXEEXT) \
+	check_block$(EXEEXT)
+check_PROGRAMS = check_block$(EXEEXT) check_block_write$(EXEEXT) \
+	check_block_read$(EXEEXT)
 subdir = tests
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/depcomp $(top_srcdir)/test-driver
@@ -90,7 +92,16 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am_check_block_OBJECTS = check_block.$(OBJEXT)
 check_block_OBJECTS = $(am_check_block_OBJECTS)
+check_block_LDADD = $(LDADD)
 check_block_DEPENDENCIES = $(top_builddir)/src/lib/libblock.a
+am_check_block_read_OBJECTS = check_block_read.$(OBJEXT)
+check_block_read_OBJECTS = $(am_check_block_read_OBJECTS)
+check_block_read_LDADD = $(LDADD)
+check_block_read_DEPENDENCIES = $(top_builddir)/src/lib/libblock.a
+am_check_block_write_OBJECTS = check_block_write.$(OBJEXT)
+check_block_write_OBJECTS = $(am_check_block_write_OBJECTS)
+check_block_write_LDADD = $(LDADD)
+check_block_write_DEPENDENCIES = $(top_builddir)/src/lib/libblock.a
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -119,8 +130,10 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(check_block_SOURCES)
-DIST_SOURCES = $(check_block_SOURCES)
+SOURCES = $(check_block_SOURCES) $(check_block_read_SOURCES) \
+	$(check_block_write_SOURCES)
+DIST_SOURCES = $(check_block_SOURCES) $(check_block_read_SOURCES) \
+	$(check_block_write_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -444,8 +457,10 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_COLOR_TESTS = always
 check_block_SOURCES = check_block.c
+check_block_read_SOURCES = check_block_read.c
+check_block_write_SOURCES = check_block_write.c
 AM_CFLAGS = -I$(top_srcdir)/src/include @CHECK_CFLAGS@
-check_block_LDADD = $(top_builddir)/src/lib/libblock.a @CHECK_LIBS@
+LDADD = $(top_builddir)/src/lib/libblock.a @CHECK_LIBS@
 all: all-am
 
 .SUFFIXES:
@@ -488,6 +503,14 @@ check_block$(EXEEXT): $(check_block_OBJECTS) $(check_block_DEPENDENCIES) $(EXTRA
 	@rm -f check_block$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(check_block_OBJECTS) $(check_block_LDADD) $(LIBS)
 
+check_block_read$(EXEEXT): $(check_block_read_OBJECTS) $(check_block_read_DEPENDENCIES) $(EXTRA_check_block_read_DEPENDENCIES) 
+	@rm -f check_block_read$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(check_block_read_OBJECTS) $(check_block_read_LDADD) $(LIBS)
+
+check_block_write$(EXEEXT): $(check_block_write_OBJECTS) $(check_block_write_DEPENDENCIES) $(EXTRA_check_block_write_DEPENDENCIES) 
+	@rm -f check_block_write$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(check_block_write_OBJECTS) $(check_block_write_LDADD) $(LIBS)
+
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -495,6 +518,8 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_block.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_block_read.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_block_write.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -703,6 +728,20 @@ recheck: all $(check_PROGRAMS)
 	        am__force_recheck=am--force-recheck \
 	        TEST_LOGS="$$log_list"; \
 	exit $$?
+check_block_write.log: check_block_write$(EXEEXT)
+	@p='check_block_write$(EXEEXT)'; \
+	b='check_block_write'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+check_block_read.log: check_block_read$(EXEEXT)
+	@p='check_block_read$(EXEEXT)'; \
+	b='check_block_read'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 check_block.log: check_block$(EXEEXT)
 	@p='check_block$(EXEEXT)'; \
 	b='check_block'; \
