@@ -4,15 +4,17 @@
 #include <bdev/defines.h>
 
 struct block_dev_t {
-        /* Specific data dri device */
-        void* dev_data;
+        void* dev_data;        /* Specific data dri device */
         size_t size;
         size_t block_size;
-        size_t (*read) (struct block_dev_t* dev, buf_t* buf,
+        buf_t* buf;
+        bnum_t buf_num;        /* Number of block in buffer */
+        ssize_t (*read) (struct block_dev_t* dev, buf_t* buf,
                         size_t buf_size, bnum_t block_num);
-        size_t (*write) (struct block_dev_t* dev, buf_t* buf,
+        ssize_t (*write) (struct block_dev_t* dev, buf_t* buf,
                          size_t buf_size, bnum_t block_num);
         int (*init) (struct block_dev_t* dev);
+        int (*release) (struct block_dev_t* dev);
 };
 
 typedef struct block_dev_t blockdev;
@@ -24,5 +26,7 @@ inline static int blockdev_init(blockdev* bdev)
         else
                 return -1;
 }
+
+uint64_t get_time();
 
 #endif
