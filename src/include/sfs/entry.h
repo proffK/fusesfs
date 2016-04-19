@@ -49,19 +49,6 @@ typedef struct {
         uint64_t time_stamp;
         uint64_t start_block;
         uint64_t end_block;
-        uint64_t size;typedef struct {
-        uint8_t entry_type;
-        uint8_t cont_entries;
-        uint64_t time_stamp;
-        uint8_t dir_name[54];
-} dir_entry;
-
-typedef struct {
-        uint8_t entry_type;
-        uint8_t cont_entries;
-        uint64_t time_stamp;
-        uint64_t start_block;
-        uint64_t end_block;
         uint64_t size;
         uint8_t name[30];
 } file_entry;
