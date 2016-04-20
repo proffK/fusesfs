@@ -2,6 +2,7 @@
 #define _BDEV_BLOCKDEV_
 
 #include <bdev/defines.h>
+#include <stddef.h>
 
 struct block_dev_t {
         void* dev_data;        /* Specific data dri device */
@@ -9,9 +10,9 @@ struct block_dev_t {
         size_t block_size;
         buf_t* buf;
         bnum_t buf_num;        /* Number of block in buffer */
-        ssize_t (*read) (struct block_dev_t* dev, buf_t* buf,
+        size_t (*read) (struct block_dev_t* dev, buf_t* buf,
                         size_t buf_size, bnum_t block_num);
-        ssize_t (*write) (struct block_dev_t* dev, buf_t* buf,
+        size_t (*write) (struct block_dev_t* dev, buf_t* buf,
                          size_t buf_size, bnum_t block_num);
         int (*init) (struct block_dev_t* dev);
         int (*release) (struct block_dev_t* dev);
