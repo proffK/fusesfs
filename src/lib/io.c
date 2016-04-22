@@ -2,6 +2,8 @@
 #include <sfs/debug.h>
 #include <sfs/entry.h>
 #include <bdev/blockdev.h>
+//#include <sfs/utils.h>
+#include <string.h>
 
 size_t read_data(blockdev* dev, uint64_t offset, uint8_t* data, size_t size)
 {
@@ -132,7 +134,7 @@ size_t read_entry(blockdev* dev, uint64_t offset, uint8_t* entry)
 {
         IO_TRACE("Reading entry: \n"
                  "offset: %d\n"
-                 "data:   %p\n" , offset, data);
+                 "data:   %p\n" , offset, entry);
 
         if (offset % INDEX_ENTRY_SIZE) {
                 IO_TRACE("Offset isn't aligned\n");
@@ -146,7 +148,7 @@ size_t write_entry(blockdev* dev, uint64_t offset, uint8_t* entry)
 {
         IO_TRACE("Writing entry: \n"
                  "offset: %d\n"
-                 "data:   %p\n" , offset, data);
+                 "data:   %p\n" , offset, entry);
 
         if (offset % INDEX_ENTRY_SIZE) {
                 IO_TRACE("Offset isn't aligned\n");

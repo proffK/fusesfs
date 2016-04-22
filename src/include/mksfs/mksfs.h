@@ -1,12 +1,12 @@
 #ifndef MKSFS_H
 #define MKSFS_H
 
-#define VOLUME_NAME_SIZE (ssize_t)52
-#define DEFAULT_BLOCK_SIZE (ssize_t)512
-#define DEFAULT_MIN_BLOCK (ssize_t)256
+#define VOLUME_NAME_SIZE (size_t)52
+#define DEFAULT_BLOCK_SIZE (size_t)512
+#define DEFAULT_MIN_BLOCK (size_t)256
 #define DEFAULT_INDEX_PERCENT 5UL
-#define INDEX_ENTRY_SIZE (ssize_t)64
-#define MBR_SIZE (ssize_t)512
+#define INDEX_ENTRY_SIZE (size_t)64
+#define MBR_SIZE (size_t)512
 #define MIN_NUM_ENTRY 2
 #define BEGIN_POWER_OF_BS 7
 #define INDEX_MIN_SIZE MIN_NUM_ENTRY*INDEX_ENTRY_SIZE 
@@ -33,11 +33,12 @@ struct sfs_options {
         size_t data_size;
         size_t index_size;
         size_t total_block;
+        size_t reserved_size;
         size_t block_size;
         char label[VOLUME_NAME_SIZE];
         char* file_name;
 };
 
-int mksfs_image_create(struct sfs_options sfs_opts);
+int image_create(struct sfs_options sfs_opts);
 
 #endif

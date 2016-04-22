@@ -75,6 +75,9 @@ int main(int argc, char* argv[]) {
          * Try to open file 
          */
         int fd = open(argv[argc - 1], O_RDWR);
+        if (fd == -1 && argc == 2) 
+                usage(EXIT_SUCCESS);
+
         if (fd == -1) {
                 fprintf(stderr, "Invalid input file/device.\n");
                 usage(EXIT_INPFILE);
@@ -133,25 +136,29 @@ int main(int argc, char* argv[]) {
         if (index_size_s == NULL) {
                 double buf = DEFAULT_INDEX_PERCENT * file_size / 100L;
                 index_size = (size_t)round(buf);
+
         } else {
                 index_size = convert_size(index_size_s, file_size);
                 if (index_size == 0 || errno == EINVAL) {
                         fprintf(stderr, "Invalid metadata size.\n");
                         usage(EXIT_NOMD);
                 }
-                if (index_size > (file_size - rsrvd_size)) {
-                        fprintf(stderr, "Index area size more than file"
-                                        " size.\n");
-                        usage(EXIT_MDLRG);
-                }
-                if (index_size < INDEX_MIN_SIZE) {
-                        fprintf(stderr, "Metadata part size too small.\n");
-                        usage(EXIT_MDSML);
-                }
+                
         }
-        /* Auto align to INDEX_ENTRY_POINT (down) */
-        index_size -= index_size % INDEX_ENTRY_SIZE; 
-        /*
+        /* Auto align to BLOCK_SIZE (up) */
+        index_size += block_size - index_size % block_size; 
+        /* Check index size(maybe file size too small) */
+        if (index_size > (file_size - rsrvd_size)) {
+                fprintf(stderr, "Index area size more or equal than file"
+                                " size.\n");
+                usage(EXIT_MDLRG);
+        }
+        /* Check size of index area */
+        if (index_size < INDEX_MIN_SIZE) {
+                fprintf(stderr, "Index part size too small.\n");
+                usage(EXIT_MDSML);
+        } 
+                /*
          * Handler label name
          */
         unsigned length = 0;
@@ -191,6 +198,7 @@ int main(int argc, char* argv[]) {
         sfs_opts.data_size = total_blocks - rsrvd_size - index_sz_perblk; 
         sfs_opts.index_size = index_size;
         sfs_opts.total_block = total_blocks;
+        sfs_opts.reserved_size = rsrvd_size;
         sfs_opts.block_size = (size_t)log2(block_size) - BEGIN_POWER_OF_BS;
         if (label != NULL)
                 strcpy(sfs_opts.label, label);
@@ -200,7 +208,8 @@ int main(int argc, char* argv[]) {
         /*
          * Create empty SFS image 
          */
-        image_create(sfs_opts);
+        if (image_create(sfs_opts) != 0)
+                return EXIT_FAILURE;
         return EXIT_SUCCESS;
 }
 
@@ -213,15 +222,15 @@ static void usage(unsigned status)
                 fprintf(stderr, "Try 'mksfs --help' for more information.\n");
         else {
                 printf("Usage: mksfs [OPTIONS] FILE\n");
-                fputs("\n"
-                      "-m, --metadata      Size of metadata part             \n"
-                      "                    Default 5%% of file size.         \n"
-                      "-b, --block-size    Number of bytes in each block.    \n"
-                      "                    It should be more than 128B and   \n"
-                      "                    block_size = 2^N, N is integer.   \n"
-                      "                    Default is 512B.                  \n"
-                      "-l, --label         Volume name in UTF-8, it shouldn't\n"
-                      "                    more than 51 symbols.\n",
+                printf("\n"
+                       "-m, --metadata    Size of metadata part              \n"
+                       "                  Default 5%% of file size.          \n"
+                       "-b, --block-size  Number of bytes in each block.     \n"
+                       "                  It should be more than 128B and    \n"
+                       "                  block_size = 2^N, N is integer.    \n"
+                       "                  Default is 512B.                   \n"
+                       "-l, --label       Volume name in UTF-8, it shouldn't \n"
+                       "                  more than 51 symbols.\n",
                        stdout); 
         }
         exit(status);
@@ -240,7 +249,7 @@ static size_t convert_size(char* parameter, off_t file_s)
         errno = 0;
         /* Try to recognize a number */
         ret_code = sscanf(parameter, "%lu%c%c", &number, &last_sym, &err_c);
-        if (err_c != '\0' || ret_code == 0) {
+        if (err_c != '\0' || ret_code == 0 || number < 0) {
                 errno = EINVAL;
                 return (size_t)(-1);
         }

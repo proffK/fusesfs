@@ -1,7 +1,8 @@
 #ifndef _SFS_DEBUG_
 #define _SFS_DEBUG_
 #include <stdio.h>
-
+#define SFS_DEBUG
+#define IO_DEBUG
 #ifdef SFS_DEBUG
 #define SFS_TRACE(...)    do {                           \
                 fprintf(stderr, "SFS   %s:%4d[%s] : ", \

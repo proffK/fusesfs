@@ -17,31 +17,31 @@ enum entry_type {
 
 struct entry_t {
         uint8_t data[INDEX_ENTRY_SIZE];
-};
+} __attribute__((packed));
 
 typedef struct {
         uint8_t entry_type; 
         uint8_t reserved[3]; 
         uint64_t time_stamp;
         uint8_t vol_label[52];
-} vol_ident_entry;
+} vol_ident_entry __attribute__((packed));
 
 typedef struct {
         uint8_t entry_type;
         uint8_t reserved[63];
-} start_entry;
+} start_entry __attribute__((packed));
 
 typedef struct {
         uint8_t entry_type;
         uint8_t reserved[63];
-} unused_entry;
+} unused_entry __attribute__((packed));
 
 typedef struct {
         uint8_t entry_type;
         uint8_t cont_entries;
         uint64_t time_stamp;
         uint8_t dir_name[54];
-} dir_entry;
+} dir_entry __attribute__((packed));
 
 typedef struct {
         uint8_t entry_type;
@@ -51,7 +51,7 @@ typedef struct {
         uint64_t end_block;
         uint64_t size;
         uint8_t name[30];
-} file_entry;
+} file_entry __attribute__((packed));
 
 
 typedef struct {
@@ -60,14 +60,14 @@ typedef struct {
         uint64_t start_block;
         uint64_t end_block;
         uint8_t reserved[38];
-} unusable_entry;
+} unusable_entry __attribute__((packed));
 
 typedef struct {
         uint8_t entry_type;
         uint8_t cont_entries;
         uint64_t time_stamp;
         uint8_t dir_name[54];
-} del_dir_entry;
+} del_dir_entry __attribute__((packed));
 
 typedef struct {
         uint8_t entry_type;
@@ -77,10 +77,10 @@ typedef struct {
         uint64_t end_block;
         uint64_t size;
         uint8_t name[30];
-} del_file_entry;
+} del_file_entry __attribute__((packed));
 
 typedef struct {
         uint8_t name[64];
-} cont_entry;
+} cont_entry __attribute__((packed));
 
 #endif 

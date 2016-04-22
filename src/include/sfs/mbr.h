@@ -13,7 +13,8 @@ struct mbr_t {
         uint32_t reserved_size;           /* In blocks */
         uint8_t  block_size;              /* Bytes per block = 
                                              2 ^ (block_size + 7) */
+        uint8_t  checksum;
         uint8_t  reserved_part_table[66];
-};
+} __attribute__((packed));
 
 #endif
