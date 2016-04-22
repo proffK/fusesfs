@@ -140,7 +140,7 @@ am_libmksfs_a_OBJECTS = mksfs.$(OBJEXT)
 libmksfs_a_OBJECTS = $(am_libmksfs_a_OBJECTS)
 libsfs_a_AR = $(AR) $(ARFLAGS)
 libsfs_a_LIBADD =
-am_libsfs_a_OBJECTS = io.$(OBJEXT)
+am_libsfs_a_OBJECTS = io.$(OBJEXT) utils.$(OBJEXT)
 libsfs_a_OBJECTS = $(am_libsfs_a_OBJECTS)
 AM_V_P = $(am__v_P_$(V))
 am__v_P_ = $(am__v_P_$(AM_DEFAULT_VERBOSITY))
@@ -296,7 +296,7 @@ noinst_LIBRARIES = libblock.a libmksfs.a
 lib_LIBRARIES = libsfs.a
 libblock_a_SOURCES = filedev.c 
 libmksfs_a_SOURCES = mksfs.c
-libsfs_a_SOURCES = io.c
+libsfs_a_SOURCES = io.c utils.c
 AM_CFLAGS = -O2 -I$(top_srcdir)/src/include
 all: all-am
 
@@ -390,6 +390,7 @@ distclean-compile:
 include ./$(DEPDIR)/filedev.Po
 include ./$(DEPDIR)/io.Po
 include ./$(DEPDIR)/mksfs.Po
+include ./$(DEPDIR)/utils.Po
 
 .c.o:
 	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
