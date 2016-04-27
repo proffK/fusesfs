@@ -35,6 +35,7 @@ size_t read_data(blockdev* dev, uint64_t offset, uint8_t* data, size_t size)
 
         memcpy(data, buf + cur_pos, bsize - cur_pos);
         size -= bsize - cur_pos;
+        data += bsize + cur_pos;
         bnum++;
 
         while (size >= bsize) {
@@ -47,6 +48,7 @@ size_t read_data(blockdev* dev, uint64_t offset, uint8_t* data, size_t size)
                 memcpy(data, buf, bsize);
                 bnum++;
                 size -= bsize;
+                data += bsize;
         }
         if (size == 0) return ret_size;
 
@@ -70,7 +72,7 @@ size_t write_data(blockdev* dev, uint64_t offset, uint8_t* data, size_t size)
         size_t ret_size = size;
 
         IO_TRACE("Writing data: \n"
-                 "offset: %d\n"
+                 "offset: %lu\n"
                  "data:   %p\n"
                  "size:   %lu\n", offset, data, size);
 
@@ -99,6 +101,7 @@ size_t write_data(blockdev* dev, uint64_t offset, uint8_t* data, size_t size)
                 return -1;
         }
         size -= bsize - cur_pos;
+        data += bsize - cur_pos;
         bnum++;
 
         while (size >= bsize) {
@@ -110,6 +113,7 @@ size_t write_data(blockdev* dev, uint64_t offset, uint8_t* data, size_t size)
                 }
                 bnum++;
                 size -= bsize;
+                data += bsize;
                 dev->buf_num = -1;
         }
 
