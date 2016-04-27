@@ -32,13 +32,13 @@ START_TEST(test_filedev_write)
         ck_assert_int_eq(blockdev_init(&bdev), 0);
         ck_assert(errno == 0);
 
-        ck_assert_int_eq(bdev.write(NULL, buf, 512, 0), 0);
+        ck_assert_int_eq(bdev.write(NULL, buf, 512, 0), -1);
         ck_assert(errno == EFAULT);
 
-        ck_assert_int_eq(bdev.write(&bdev, NULL, 512, 0), 0);
+        ck_assert_int_eq(bdev.write(&bdev, NULL, 512, 0), -1);
         ck_assert(errno == EFAULT);
 
-        ck_assert_int_eq(bdev.write(&bdev, buf, 513, 0), 0);
+        ck_assert_int_eq(bdev.write(&bdev, buf, 513, 0), -1);
         ck_assert(errno == EINVAL);
 
         ck_assert_int_eq(bdev.write(&bdev, buf, 512, 0), 512);

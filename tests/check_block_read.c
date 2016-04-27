@@ -30,13 +30,13 @@ START_TEST(test_filedev_read)
         ck_assert_int_eq(blockdev_init(&bdev), 0);
         ck_assert(errno == 0);
 
-        ck_assert_int_eq(bdev.read(NULL, buf, 512, 0), 0);
+        ck_assert_int_eq(bdev.read(NULL, buf, 512, 0), -1);
         ck_assert(errno == EFAULT);
 
-        ck_assert_int_eq(bdev.read(&bdev, NULL, 512, 0), 0);
+        ck_assert_int_eq(bdev.read(&bdev, NULL, 512, 0), -1);
         ck_assert(errno == EFAULT);
 
-        ck_assert_int_eq(bdev.read(&bdev, buf, 513, 0), 0);
+        ck_assert_int_eq(bdev.read(&bdev, buf, 513, 0), -1);
         ck_assert(errno == EINVAL);
 
         ck_assert_int_eq(bdev.read(&bdev, buf, 512, 0), 512);
