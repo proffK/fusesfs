@@ -1,6 +1,6 @@
 #ifndef _SFS_ENTRY_
 #define _SFS_ENTRY_
-#include <stdint.h>
+#include <sfs/defs.h>
 
 #define INDEX_ENTRY_SIZE 64
 
@@ -15,9 +15,10 @@ enum entry_type {
         DEL_FILE_ENTRY = 0x1A
 };
 
-struct entry_t {
-        uint8_t data[INDEX_ENTRY_SIZE];
-} __attribute__((packed));
+typedef struct {
+        uint8_t entry_type;
+        uint8_t data[INDEX_ENTRY_SIZE - 1];
+} entry_t __attribute__((packed));
 
 typedef struct {
         uint8_t entry_type; 
@@ -28,7 +29,8 @@ typedef struct {
 
 typedef struct {
         uint8_t entry_type;
-        uint8_t reserved[63];
+        uint64_t del_start;
+        uint8_t reserved[55];
 } start_entry __attribute__((packed));
 
 typedef struct {
