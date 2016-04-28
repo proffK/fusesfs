@@ -18,7 +18,7 @@ enum entry_type {
 typedef struct {
         uint8_t entry_type;
         uint8_t data[INDEX_ENTRY_SIZE - 1];
-} entry_t __attribute__((packed));
+} entry __attribute__((packed));
 
 typedef struct {
         uint8_t entry_type; 
