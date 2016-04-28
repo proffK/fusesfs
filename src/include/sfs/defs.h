@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <sys/stat.h>
 
 typedef uint64_t flag_t;
 
