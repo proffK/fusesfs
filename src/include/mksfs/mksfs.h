@@ -1,11 +1,13 @@
 #ifndef MKSFS_H
 #define MKSFS_H
 
+#include <sfs/defs.h>
+#include <sfs/entry.h>
+
 #define VOLUME_NAME_SIZE (size_t)52
 #define DEFAULT_BLOCK_SIZE (size_t)512
 #define DEFAULT_MIN_BLOCK (size_t)256
 #define DEFAULT_INDEX_PERCENT 5UL
-#define INDEX_ENTRY_SIZE (size_t)64
 #define MBR_SIZE (size_t)512
 #define MIN_NUM_ENTRY 2
 #define BEGIN_POWER_OF_BS 7
@@ -29,7 +31,7 @@ enum exit_codes {
  * a SFS file system
  */
 struct sfs_options {
-        size_t time_stamp;
+        time_t time_stamp;
         size_t data_size;
         size_t index_size;
         size_t total_block;

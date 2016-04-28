@@ -22,7 +22,6 @@ static size_t convert_size(char* parameter, off_t file_s);
 
 int main(int argc, char* argv[]) {
         int opt = 0;
-        int flag = 0;
         struct sfs_options sfs_opts;
         /* Service variables */
         size_t rsrvd_size       = MBR_SIZE;
@@ -34,7 +33,6 @@ int main(int argc, char* argv[]) {
         char*  index_size_s     = NULL;
         char*  block_size_s     = NULL;
         char*  label            = NULL;
-        char*  file_name        = NULL;
         /* Struct for getopt_long */
         static struct option const long_options[] = {
                 {"help", no_argument, NULL, 'h'},
@@ -230,8 +228,7 @@ static void usage(unsigned status)
                        "                  block_size = 2^N, N is integer.    \n"
                        "                  Default is 512B.                   \n"
                        "-l, --label       Volume name in UTF-8, it shouldn't \n"
-                       "                  more than 51 symbols.\n",
-                       stdout); 
+                       "                  more than 51 symbols.\n"); 
         }
         exit(status);
 }     

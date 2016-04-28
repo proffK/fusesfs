@@ -14,12 +14,12 @@ size_t read_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
         size_t ret_size = size;
 
         IO_TRACE("Reading data: \n"
-                 "offset: %d\n"
+                 "offset: %lu\n"
                  "data:   %p\n"
                  "size:   %lu\n", offset, data, size);
 
         if (dev->buf_num != bnum) {
-                IO_TRACE("Read block: %d\n", bnum);
+                IO_TRACE("Read block: %lu\n", bnum);
                 if (dev->read(dev, buf, bsize, bnum) == -1) {
                         IO_TRACE("Reading failed\n");
                         return -1;
@@ -39,7 +39,7 @@ size_t read_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
         bnum++;
 
         while (size >= bsize) {
-                IO_TRACE("Read block: %d\n", bnum);
+                IO_TRACE("Read block: %lu\n", bnum);
                 if (dev->read(dev, buf, bsize, bnum) == -1) {
                         IO_TRACE("Reading failed\n");
                         return -1;
@@ -53,7 +53,7 @@ size_t read_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
         if (size == 0) return ret_size;
 
         dev->buf_num = bnum;
-        IO_TRACE("Read block: %d", bnum);
+        IO_TRACE("Read block: %lu", bnum);
         if (dev->read(dev, buf, bsize, bnum) == -1) {
                 IO_TRACE("Reading failed\n");
                 return -1;
@@ -76,7 +76,7 @@ size_t write_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
                  "data:   %p\n"
                  "size:   %lu\n", offset, data, size);
 
-        IO_TRACE("Read block: %d", bnum);
+        IO_TRACE("Read block: %lu", bnum);
         if (dev->read(dev, buf, bsize, bnum) == -1) {
                 IO_TRACE("Reading failed\n");
                 return -1;
@@ -85,7 +85,7 @@ size_t write_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
 
         if (cur_pos + size <= bsize) {
                 memcpy(buf + cur_pos, data, size);
-                IO_TRACE("Write block: %d", bnum);
+                IO_TRACE("Write block: %lu", bnum);
                 if (dev->write(dev, buf, bsize, bnum) == -1) {
                         IO_TRACE("Writing failed\n");   
                         return -1;
@@ -95,7 +95,7 @@ size_t write_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
         }
 
         memcpy(buf + cur_pos, data, bsize - cur_pos);
-        IO_TRACE("Write block: %d", bnum);
+        IO_TRACE("Write block: %lu", bnum);
         if (dev->write(dev, buf, bsize, bnum) == -1) {
                 IO_TRACE("Writing failed\n");   
                 return -1;
@@ -106,7 +106,7 @@ size_t write_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
 
         while (size >= bsize) {
                 memcpy(buf, data, bsize);
-                IO_TRACE("Write block: %d", bnum);
+                IO_TRACE("Write block: %lu", bnum);
                 if (dev->write(dev, buf, bsize, bnum) == -1) {
                         IO_TRACE("Writing failed\n");   
                         return -1;
@@ -120,7 +120,7 @@ size_t write_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
         if (size == 0) return ret_size;
 
         dev->buf_num = bnum;
-        IO_TRACE("Read block: %d", bnum);
+        IO_TRACE("Read block: %lu", bnum);
         if (dev->read(dev, buf, bsize, bnum) == -1) {
                 IO_TRACE("Reading failed\n");   
                 return -1;
@@ -137,7 +137,7 @@ size_t write_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
 size_t read_entry(blockdev* dev, off_t offset, entry* entry)
 {
         IO_TRACE("Reading entry: \n"
-                 "offset: %d\n"
+                 "offset: %lu\n"
                  "data:   %p\n" , offset, entry);
 
         if (offset % INDEX_ENTRY_SIZE) {
@@ -145,13 +145,13 @@ size_t read_entry(blockdev* dev, off_t offset, entry* entry)
                 return -1;
         }
 
-        return read_data(dev, offset, entry, INDEX_ENTRY_SIZE);
+        return read_data(dev, offset, (uint8_t*)entry, INDEX_ENTRY_SIZE);
 }
 
 size_t write_entry(blockdev* dev, off_t offset, entry* entry)
 {
         IO_TRACE("Writing entry: \n"
-                 "offset: %d\n"
+                 "offset: %lu\n"
                  "data:   %p\n" , offset, entry);
 
         if (offset % INDEX_ENTRY_SIZE) {
@@ -159,6 +159,6 @@ size_t write_entry(blockdev* dev, off_t offset, entry* entry)
                 return -1;
         }
 
-        return write_data(dev, offset, entry, INDEX_ENTRY_SIZE);
+        return write_data(dev, offset, (uint8_t*)entry, INDEX_ENTRY_SIZE);
 }
 

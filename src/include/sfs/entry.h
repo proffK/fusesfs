@@ -18,32 +18,32 @@ enum entry_type {
 typedef struct {
         uint8_t entry_type;
         uint8_t data[INDEX_ENTRY_SIZE - 1];
-} entry __attribute__((packed));
+} __attribute__((packed)) entry;
 
 typedef struct {
         uint8_t entry_type; 
         uint8_t reserved[3]; 
         uint64_t time_stamp;
         uint8_t vol_label[52];
-} vol_ident_entry __attribute__((packed));
+} __attribute__((packed)) vol_ident_entry;
 
 typedef struct {
         uint8_t entry_type;
         uint64_t del_start;
         uint8_t reserved[55];
-} start_entry __attribute__((packed));
+} __attribute__((packed)) start_entry;
 
 typedef struct {
         uint8_t entry_type;
         uint8_t reserved[63];
-} unused_entry __attribute__((packed));
+} __attribute__((packed)) unused_entry;
 
 typedef struct {
         uint8_t entry_type;
         uint8_t cont_entries;
         uint64_t time_stamp;
         uint8_t dir_name[54];
-} dir_entry __attribute__((packed));
+} __attribute__((packed)) dir_entry;
 
 typedef struct {
         uint8_t entry_type;
@@ -53,7 +53,7 @@ typedef struct {
         uint64_t end_block;
         uint64_t size;
         uint8_t name[30];
-} file_entry __attribute__((packed));
+} __attribute__((packed)) file_entry;
 
 
 typedef struct {
@@ -62,14 +62,14 @@ typedef struct {
         uint64_t start_block;
         uint64_t end_block;
         uint8_t reserved[38];
-} unusable_entry __attribute__((packed));
+} __attribute__((packed)) unusable_entry;
 
 typedef struct {
         uint8_t entry_type;
         uint8_t cont_entries;
         uint64_t time_stamp;
         uint8_t dir_name[54];
-} del_dir_entry __attribute__((packed));
+} __attribute__((packed)) del_dir_entry;
 
 typedef struct {
         uint8_t entry_type;
@@ -79,10 +79,10 @@ typedef struct {
         uint64_t end_block;
         uint64_t size;
         uint8_t name[30];
-} del_file_entry __attribute__((packed));
+} __attribute__((packed)) del_file_entry;
 
 typedef struct {
         uint8_t name[64];
-} cont_entry __attribute__((packed));
+} __attribute__((packed)) cont_entry;
 
 #endif 

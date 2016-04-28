@@ -8,6 +8,7 @@
 
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/wait.h>
 
 #define TESTFILE_NAME "testfile"
 #define TRUE_NAME1     "trueimage512"
@@ -17,7 +18,7 @@
 #define TESTFILE_PERM 0600
 
 #define TIMESTAMP1 404
-#define TIMESTAMP2 0x27c8
+#define TIMESTAMP2 0x27c4
 #define CHECKSUM 448
 
 static int clear_timestamp(char* filename) 
@@ -27,13 +28,16 @@ static int clear_timestamp(char* filename)
 
         fd = open(filename, O_RDWR);
         lseek(fd, TIMESTAMP1, SEEK_SET);
-        write(fd, &new_time, sizeof(uint64_t));
+        if (write(fd, &new_time, sizeof(uint64_t)) == -1)
+                return -1;
 
         lseek(fd, TIMESTAMP2, SEEK_SET);
-        write(fd, &new_time, sizeof(uint64_t));
+        if (write(fd, &new_time, sizeof(uint64_t)) == -1)
+                return -1;
 
         lseek(fd, CHECKSUM, SEEK_SET);
-        write(fd, &new_time, sizeof(uint16_t)); 
+        if (write(fd, &new_time, sizeof(uint16_t)) == -1)
+                return -1;
 
         close(fd);
         
@@ -83,7 +87,7 @@ START_TEST(test_mkfs)
 
         pid = fork();
         if (pid == 0) {
-                execlp("cmp", "cmp", TESTFILE_NAME, TRUE_NAME1, NULL);
+                execlp("cmp", "cmp", "-l", TESTFILE_NAME, TRUE_NAME1, NULL);
         }
         wait(&ret);
         ck_assert_int_eq(ret, 0);
@@ -121,7 +125,7 @@ START_TEST(test_mkfs)
 
         pid = fork();
         if (pid == 0) {
-                execlp("cmp", "cmp", TESTFILE_NAME, TRUE_NAME3, NULL);
+                execlp("cmp", "cmp", "-l", TESTFILE_NAME, TRUE_NAME3, NULL);
         }
         wait(&ret);
         ck_assert_int_eq(ret, 0);
