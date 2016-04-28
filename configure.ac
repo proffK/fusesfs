@@ -10,6 +10,7 @@ AC_CONFIG_FILES([
                  Makefile
                  src/mksfs/Makefile
                  src/lib/Makefile
+                 src/lib/sfs/Makefile
                  tests/Makefile
                  ])
 
