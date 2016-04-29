@@ -11,8 +11,8 @@
 #include <sfs/io.h>
 #include <sfs/debug.h>
 
-
-int image_create(struct sfs_options sfs_opts) {
+int image_create(struct sfs_options sfs_opts) 
+{
         size_t block_size = pow(2, sfs_opts.block_size + BEGIN_POWER_OF_BS);
         /*
          * Print volume info 
@@ -32,6 +32,10 @@ int image_create(struct sfs_options sfs_opts) {
         /*
          * Init file and device
          */
+        uint8_t buffer = 0;
+        uint64_t counter = 0;
+        uint64_t end = 0;
+
         size_t i = 0;
         filedev_data fdev;
         blockdev bdev;
@@ -69,6 +73,12 @@ int image_create(struct sfs_options sfs_opts) {
         mbr_block.total_size = sfs_opts.total_block;
         mbr_block.reserved_size = sfs_opts.reserved_size;
         mbr_block.block_size = sfs_opts.block_size;
+        counter = (uint64_t)&mbr_block.magic_number;
+        end = (uint64_t)&mbr_block.checksum;
+        for (; counter < end; counter++) 
+                buffer += *(uint8_t*)counter;
+        mbr_block.checksum = buffer; 
+                
         if (write_data(&bdev, 0, (uint8_t*)(&mbr_block), MBR_SIZE) == -1)
                 return -1;
         /*

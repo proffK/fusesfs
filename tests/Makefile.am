@@ -1,9 +1,10 @@
-TESTS = check_block_write check_block_read check_block check_mkfs
+TESTS = check_block_write check_block_read check_block check_mkfs check_utils
 AM_COLOR_TESTS = always
-check_PROGRAMS = check_block check_mkfs check_block_write check_block_read
+check_PROGRAMS = check_block check_mkfs check_block_write check_block_read check_utils
 check_block_SOURCES = check_block.c
 check_mkfs_SOURCES = check_mkfs.c
 check_block_read_SOURCES = check_block_read.c
 check_block_write_SOURCES = check_block_write.c
+check_utils_SOURCES = check_utils.c
 AM_CFLAGS = -Wall -Werror -I$(top_srcdir)/src/include @CHECK_CFLAGS@
 LDADD = $(top_builddir)/src/lib/libblock.a @CHECK_LIBS@

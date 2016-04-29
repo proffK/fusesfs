@@ -76,9 +76,10 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 TESTS = check_block_write$(EXEEXT) check_block_read$(EXEEXT) \
-	check_block$(EXEEXT) check_mkfs$(EXEEXT)
+	check_block$(EXEEXT) check_mkfs$(EXEEXT) check_utils$(EXEEXT)
 check_PROGRAMS = check_block$(EXEEXT) check_mkfs$(EXEEXT) \
-	check_block_write$(EXEEXT) check_block_read$(EXEEXT)
+	check_block_write$(EXEEXT) check_block_read$(EXEEXT) \
+	check_utils$(EXEEXT)
 subdir = tests
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/depcomp $(top_srcdir)/test-driver
@@ -106,6 +107,10 @@ am_check_mkfs_OBJECTS = check_mkfs.$(OBJEXT)
 check_mkfs_OBJECTS = $(am_check_mkfs_OBJECTS)
 check_mkfs_LDADD = $(LDADD)
 check_mkfs_DEPENDENCIES = $(top_builddir)/src/lib/libblock.a
+am_check_utils_OBJECTS = check_utils.$(OBJEXT)
+check_utils_OBJECTS = $(am_check_utils_OBJECTS)
+check_utils_LDADD = $(LDADD)
+check_utils_DEPENDENCIES = $(top_builddir)/src/lib/libblock.a
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -135,9 +140,11 @@ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(check_block_SOURCES) $(check_block_read_SOURCES) \
-	$(check_block_write_SOURCES) $(check_mkfs_SOURCES)
+	$(check_block_write_SOURCES) $(check_mkfs_SOURCES) \
+	$(check_utils_SOURCES)
 DIST_SOURCES = $(check_block_SOURCES) $(check_block_read_SOURCES) \
-	$(check_block_write_SOURCES) $(check_mkfs_SOURCES)
+	$(check_block_write_SOURCES) $(check_mkfs_SOURCES) \
+	$(check_utils_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -464,6 +471,7 @@ check_block_SOURCES = check_block.c
 check_mkfs_SOURCES = check_mkfs.c
 check_block_read_SOURCES = check_block_read.c
 check_block_write_SOURCES = check_block_write.c
+check_utils_SOURCES = check_utils.c
 AM_CFLAGS = -Wall -Werror -I$(top_srcdir)/src/include @CHECK_CFLAGS@
 LDADD = $(top_builddir)/src/lib/libblock.a @CHECK_LIBS@
 all: all-am
@@ -520,6 +528,10 @@ check_mkfs$(EXEEXT): $(check_mkfs_OBJECTS) $(check_mkfs_DEPENDENCIES) $(EXTRA_ch
 	@rm -f check_mkfs$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(check_mkfs_OBJECTS) $(check_mkfs_LDADD) $(LIBS)
 
+check_utils$(EXEEXT): $(check_utils_OBJECTS) $(check_utils_DEPENDENCIES) $(EXTRA_check_utils_DEPENDENCIES) 
+	@rm -f check_utils$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(check_utils_OBJECTS) $(check_utils_LDADD) $(LIBS)
+
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -530,6 +542,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_block_read.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_block_write.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_mkfs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_utils.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -762,6 +775,13 @@ check_block.log: check_block$(EXEEXT)
 check_mkfs.log: check_mkfs$(EXEEXT)
 	@p='check_mkfs$(EXEEXT)'; \
 	b='check_mkfs'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+check_utils.log: check_utils$(EXEEXT)
+	@p='check_utils$(EXEEXT)'; \
+	b='check_utils'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
