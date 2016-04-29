@@ -11,7 +11,7 @@
 #define PACKAGE_NAME "sfs-utils"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "sfs-utils 0.01"
+#define PACKAGE_STRING "sfs-utils 0.02"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "sfs-utils"
@@ -20,7 +20,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.01"
+#define PACKAGE_VERSION "0.02"
 
 /* Version number of package */
-#define VERSION "0.01"
+#define VERSION "0.02"

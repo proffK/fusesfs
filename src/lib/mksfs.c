@@ -39,6 +39,7 @@ int image_create(struct sfs_options sfs_opts) {
         vol_ident_entry vol_entry;
         start_entry st_entry;
         unused_entry remain_area;
+        del_file_entry del_entry;
         SFS_TRACE("Calculating aligned index area position.");
         size_t g_offset_start = sfs_opts.total_block * block_size - 
                                 sfs_opts.index_size; 
@@ -88,9 +89,22 @@ int image_create(struct sfs_options sfs_opts) {
         if (write_data(&bdev, g_offset_start, (uint8_t*)(&st_entry),
                        INDEX_ENTRY_SIZE) == -1)
                 return -1;
-        if (sfs_opts.index_size <= INDEX_MIN_SIZE)
+        if (sfs_opts.index_size == INDEX_MIN_SIZE)
                 return 0;
-
+        /* Fill deleted file */
+        memset(&del_entry, 0, INDEX_ENTRY_SIZE); 
+        del_entry.entry_type = DEL_FILE_ENTRY;
+        del_entry.cont_entries = 0;
+        del_entry.time_stamp = (uint64_t)NULL;
+        del_entry.start_block = mbr_block.reserved_size; 
+        del_entry.end_block = mbr_block.reserved_size + 
+                              mbr_block.block_size - 1;
+        del_entry.size = (uint64_t)NULL;
+        strncpy((char*)del_entry.name, "*free", 29);
+        if (write_data(&bdev, g_offset_start, (uint8_t*)(&del_entry),
+                       INDEX_ENTRY_SIZE) == -1)
+                return -1;
+        /* Fill remainig area of unused entries */
         SFS_TRACE("Filling remain INDEX area with unused entries.");
         memset(&remain_area, 0, INDEX_ENTRY_SIZE);
         remain_area.entry_type = UNUSED_ENTRY;

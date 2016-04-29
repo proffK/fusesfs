@@ -1,4 +1,4 @@
-AC_INIT([sfs-utils], [0.01], [proffk@linux.com])
+AC_INIT([sfs-utils], [0.02], [proffk@linux.com])
 AM_INIT_AUTOMAKE
 
 AC_PROG_CC
