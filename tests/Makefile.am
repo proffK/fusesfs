@@ -5,5 +5,5 @@ check_block_SOURCES = check_block.c
 check_mkfs_SOURCES = check_mkfs.c
 check_block_read_SOURCES = check_block_read.c
 check_block_write_SOURCES = check_block_write.c
-AM_CFLAGS = -I$(top_srcdir)/src/include @CHECK_CFLAGS@
+AM_CFLAGS = -Wall -Werror -I$(top_srcdir)/src/include @CHECK_CFLAGS@
 LDADD = $(top_builddir)/src/lib/libblock.a @CHECK_LIBS@

@@ -1,4 +1,4 @@
-//#include <sys/types.h>
+#include <string.h>
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
@@ -39,6 +39,7 @@ int image_create(struct sfs_options sfs_opts) {
         vol_ident_entry vol_entry;
         start_entry st_entry;
         unused_entry remain_area;
+        del_file_entry del_entry;
         SFS_TRACE("Calculating aligned index area position.");
         size_t g_offset_start = sfs_opts.total_block * block_size - 
                                 sfs_opts.index_size; 
@@ -57,7 +58,7 @@ int image_create(struct sfs_options sfs_opts) {
         /*
          * Fill MBR block
          */
-        SFS_TRACE("Filling MBR section. MBR size: %d.", sizeof(struct mbr_t));
+        SFS_TRACE("Filling MBR section. MBR size: %lu.", sizeof(struct mbr_t));
         memset(&mbr_block, 0, MBR_SIZE);
         mbr_block.time_stamp = sfs_opts.time_stamp;
         mbr_block.data_area_size = sfs_opts.data_size;
@@ -68,7 +69,7 @@ int image_create(struct sfs_options sfs_opts) {
         mbr_block.total_size = sfs_opts.total_block;
         mbr_block.reserved_size = sfs_opts.reserved_size;
         mbr_block.block_size = sfs_opts.block_size;
-        if (write_data(&bdev, 0, (void*)(&mbr_block), MBR_SIZE) == -1)
+        if (write_data(&bdev, 0, (uint8_t*)(&mbr_block), MBR_SIZE) == -1)
                 return -1;
         /*
          * Fill basic info in index area
@@ -79,24 +80,37 @@ int image_create(struct sfs_options sfs_opts) {
         vol_entry.entry_type = VOL_IDENT;
         vol_entry.time_stamp = sfs_opts.time_stamp;
         memcpy(vol_entry.vol_label, sfs_opts.label, strlen(sfs_opts.label));
-        if (write_data(&bdev, g_offset_vol, (void*)(&vol_entry), 
+        if (write_data(&bdev, g_offset_vol, (uint8_t*)(&vol_entry), 
                        INDEX_ENTRY_SIZE) == -1) 
                 return -1;
         /* Fill starting marker entry */
         memset(&st_entry, 0, INDEX_ENTRY_SIZE);
         st_entry.entry_type = START_ENTRY;
-        if (write_data(&bdev, g_offset_start, (void*)(&st_entry),
+        if (write_data(&bdev, g_offset_start, (uint8_t*)(&st_entry),
                        INDEX_ENTRY_SIZE) == -1)
                 return -1;
-        if (sfs_opts.index_size <= INDEX_MIN_SIZE)
+        if (sfs_opts.index_size == INDEX_MIN_SIZE)
                 return 0;
-
+        /* Fill deleted file */
+        memset(&del_entry, 0, INDEX_ENTRY_SIZE); 
+        del_entry.entry_type = DEL_FILE_ENTRY;
+        del_entry.cont_entries = 0;
+        del_entry.time_stamp = (uint64_t)NULL;
+        del_entry.start_block = mbr_block.reserved_size; 
+        del_entry.end_block = mbr_block.reserved_size + 
+                              mbr_block.block_size - 1;
+        del_entry.size = (uint64_t)NULL;
+        strncpy((char*)del_entry.name, "*free", 29);
+        if (write_data(&bdev, g_offset_start, (uint8_t*)(&del_entry),
+                       INDEX_ENTRY_SIZE) == -1)
+                return -1;
+        /* Fill remainig area of unused entries */
         SFS_TRACE("Filling remain INDEX area with unused entries.");
         memset(&remain_area, 0, INDEX_ENTRY_SIZE);
         remain_area.entry_type = UNUSED_ENTRY;
         for (i = g_offset_start + INDEX_ENTRY_SIZE; 
              i < g_offset_vol; i += INDEX_ENTRY_SIZE) 
-                if (write_data(&bdev, i, (void*)(&remain_area), 
+                if (write_data(&bdev, i, (uint8_t*)(&remain_area), 
                                INDEX_ENTRY_SIZE) == -1) 
                         return -1;
         bdev.release(&bdev); 

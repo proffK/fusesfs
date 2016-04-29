@@ -55,7 +55,7 @@ static int filedev_release(blockdev* bdev)
         return 0;
 }
 
-static ssize_t filedev_read(blockdev* bdev, buf_t* buf, 
+static size_t filedev_read(blockdev* bdev, buf_t* buf, 
                            size_t buf_size, bnum_t block_num)
 {
         ssize_t size = 0;
@@ -102,7 +102,7 @@ static ssize_t filedev_read(blockdev* bdev, buf_t* buf,
         return (size_t) size;
 }
 
-static ssize_t filedev_write(blockdev* bdev, buf_t* buf, 
+static size_t filedev_write(blockdev* bdev, buf_t* buf, 
                             size_t buf_size, bnum_t block_num)
 {
         ssize_t size = 0;

@@ -71,8 +71,6 @@ static Suite* blockdev_suite(void)
 {
         Suite* s = NULL;
         TCase* tc_init = NULL;
-        TCase* tc_read = NULL;
-        TCase* tc_write = NULL;
 
         s = suite_create("Block device layer");
 
