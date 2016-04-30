@@ -37,8 +37,6 @@ time_t sfs_gettime(sfs_unit* fs, const char* filepath);
 
 size_t sfs_getsize(sfs_unit* fs, const char* filepath);
 
-int sfs_rename(sfs_unit* fs, const char* filepath);
-
 int sfs_mkdir(sfs_unit* fs, const char* dirpath);
 
 int sfs_rmdir(sfs_unit* fs, const char* dirpath);
