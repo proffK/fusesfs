@@ -2,7 +2,10 @@
 #define _SFS_ENTRY_
 #include <sfs/defs.h>
 
-#define INDEX_ENTRY_SIZE 64
+#define MAX_DIR_PATH            16374
+#define MAX_FILE_PATH           16350
+#define MAX_VOL_LABEL           52
+#define INDEX_ENTRY_SIZE        64
 
 enum entry_type {
         VOL_IDENT      = 0x01,
