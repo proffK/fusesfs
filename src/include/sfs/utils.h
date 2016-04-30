@@ -5,7 +5,9 @@
 
 #include <sfs/mbr.h>
 
-uint8_t* memcpy(uint8_t* src, uint8_t* dst, size_t size);
+#ifndef UTILS_NON_CONFLICT
+uint8_t* memcpy(uint8_t* dst, uint8_t* src, size_t size);
+#endif
 
 inline static int is_correct_char(char c) 
 {

@@ -179,7 +179,7 @@ int main(int argc, char* argv[]) {
                         fprintf(stderr, "Unsupported symbol \'%c\' in volume name.\n",
                                 label[i]);
                         usage(EXIT_LBL);
-                 }
+                }
         /*
          * Start to flll fields of options struct
          */

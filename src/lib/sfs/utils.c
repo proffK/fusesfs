@@ -4,7 +4,8 @@
 #define D_ALIGNED(ptr) (!((uint64_t) ptr % sizeof(uint32_t)))
 #define W_ALIGNED(ptr) (!((uint64_t) ptr % sizeof(uint16_t)))
 
-uint8_t* memcpy(uint8_t* dst, uint8_t* src, size_t size) 
+#ifndef UTILS_NON_CONFLICT
+uint8_t* memcpy(uint8_t* dst, uint8_t* src, size_t size)
 {
         uint8_t* old_dst = dst;
 
@@ -41,6 +42,7 @@ uint8_t* memcpy(uint8_t* dst, uint8_t* src, size_t size)
 
         return old_dst;
 }
+#endif
 
 int is_correct_string(char* string, size_t length) 
 {

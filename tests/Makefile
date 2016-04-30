@@ -107,7 +107,7 @@ am_check_mkfs_OBJECTS = check_mkfs.$(OBJEXT)
 check_mkfs_OBJECTS = $(am_check_mkfs_OBJECTS)
 check_mkfs_LDADD = $(LDADD)
 check_mkfs_DEPENDENCIES = $(top_builddir)/src/lib/libblock.a
-am_check_utils_OBJECTS = check_utils.$(OBJEXT)
+am_check_utils_OBJECTS = check_utils.$(OBJEXT) utils.$(OBJEXT)
 check_utils_OBJECTS = $(am_check_utils_OBJECTS)
 check_utils_LDADD = $(LDADD)
 check_utils_DEPENDENCIES = $(top_builddir)/src/lib/libblock.a
@@ -127,6 +127,10 @@ DEFAULT_INCLUDES = -I. -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
+AM_V_lt = $(am__v_lt_$(V))
+am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
+am__v_lt_0 = --silent
+am__v_lt_1 = 
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 AM_V_CC = $(am__v_CC_$(V))
@@ -471,7 +475,7 @@ check_block_SOURCES = check_block.c
 check_mkfs_SOURCES = check_mkfs.c
 check_block_read_SOURCES = check_block_read.c
 check_block_write_SOURCES = check_block_write.c
-check_utils_SOURCES = check_utils.c
+check_utils_SOURCES = check_utils.c $(top_srcdir)/src/lib/sfs/utils.c
 AM_CFLAGS = -Wall -Werror -I$(top_srcdir)/src/include -pthread  
 LDADD = $(top_builddir)/src/lib/libblock.a -pthread -lcheck_pic -lrt -lm  
 all: all-am
@@ -543,6 +547,7 @@ include ./$(DEPDIR)/check_block_read.Po
 include ./$(DEPDIR)/check_block_write.Po
 include ./$(DEPDIR)/check_mkfs.Po
 include ./$(DEPDIR)/check_utils.Po
+include ./$(DEPDIR)/utils.Po
 
 .c.o:
 	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -557,6 +562,20 @@ include ./$(DEPDIR)/check_utils.Po
 #	$(AM_V_CC)source='$<' object='$@' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(AM_V_CC_no)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+utils.o: $(top_srcdir)/src/lib/sfs/utils.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT utils.o -MD -MP -MF $(DEPDIR)/utils.Tpo -c -o utils.o `test -f '$(top_srcdir)/src/lib/sfs/utils.c' || echo '$(srcdir)/'`$(top_srcdir)/src/lib/sfs/utils.c
+	$(AM_V_at)$(am__mv) $(DEPDIR)/utils.Tpo $(DEPDIR)/utils.Po
+#	$(AM_V_CC)source='$(top_srcdir)/src/lib/sfs/utils.c' object='utils.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o utils.o `test -f '$(top_srcdir)/src/lib/sfs/utils.c' || echo '$(srcdir)/'`$(top_srcdir)/src/lib/sfs/utils.c
+
+utils.obj: $(top_srcdir)/src/lib/sfs/utils.c
+	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT utils.obj -MD -MP -MF $(DEPDIR)/utils.Tpo -c -o utils.obj `if test -f '$(top_srcdir)/src/lib/sfs/utils.c'; then $(CYGPATH_W) '$(top_srcdir)/src/lib/sfs/utils.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/src/lib/sfs/utils.c'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/utils.Tpo $(DEPDIR)/utils.Po
+#	$(AM_V_CC)source='$(top_srcdir)/src/lib/sfs/utils.c' object='utils.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(AM_V_CC_no)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o utils.obj `if test -f '$(top_srcdir)/src/lib/sfs/utils.c'; then $(CYGPATH_W) '$(top_srcdir)/src/lib/sfs/utils.c'; else $(CYGPATH_W) '$(srcdir)/$(top_srcdir)/src/lib/sfs/utils.c'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
