@@ -1,12 +1,14 @@
-io.o: io.c /usr/include/stdc-predef.h ../../../src/include/sfs/io.h \
- ../../../src/include/sfs/defs.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.8/include/stddef.h \
+sfs_init.o: sfs_init.c /usr/include/stdc-predef.h \
+ ../../../src/include/sfs/unit.h ../../../src/include/bdev/blockdev.h \
+ ../../../src/include/bdev/defines.h \
  /usr/lib/gcc/x86_64-linux-gnu/4.8/include/stdint.h /usr/include/stdint.h \
  /usr/include/features.h /usr/include/x86_64-linux-gnu/sys/cdefs.h \
  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
  /usr/include/x86_64-linux-gnu/gnu/stubs.h \
  /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
- /usr/include/x86_64-linux-gnu/bits/wchar.h /usr/include/unistd.h \
+ /usr/include/x86_64-linux-gnu/bits/wchar.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.8/include/stddef.h \
+ ../../../src/include/sfs/defs.h /usr/include/unistd.h \
  /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
  /usr/include/x86_64-linux-gnu/bits/environments.h \
  /usr/include/x86_64-linux-gnu/bits/types.h \
@@ -21,23 +23,23 @@ io.o: io.c /usr/include/stdc-predef.h ../../../src/include/sfs/io.h \
  /usr/include/x86_64-linux-gnu/bits/select.h \
  /usr/include/x86_64-linux-gnu/bits/sigset.h \
  /usr/include/x86_64-linux-gnu/bits/select2.h \
- ../../../src/include/sfs/entry.h ../../../src/include/bdev/blockdev.h \
- ../../../src/include/bdev/defines.h ../../../src/include/sfs/debug.h \
- /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h \
- /usr/include/wchar.h /usr/lib/gcc/x86_64-linux-gnu/4.8/include/stdarg.h \
+ ../../../src/include/sfs/io.h ../../../src/include/sfs/entry.h \
+ ../../../src/include/sfs/mbr.h ../../../src/include/sfs/utils.h \
+ ../../../src/include/sfs/debug.h /usr/include/stdio.h \
+ /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
+ /usr/lib/gcc/x86_64-linux-gnu/4.8/include/stdarg.h \
  /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
  /usr/include/x86_64-linux-gnu/bits/sys_errlist.h \
  /usr/include/x86_64-linux-gnu/bits/stdio.h \
- /usr/include/x86_64-linux-gnu/bits/stdio2.h \
- ../../../src/include/sfs/utils.h ../../../src/include/sfs/mbr.h
+ /usr/include/x86_64-linux-gnu/bits/stdio2.h
 
 /usr/include/stdc-predef.h:
 
-../../../src/include/sfs/io.h:
+../../../src/include/sfs/unit.h:
 
-../../../src/include/sfs/defs.h:
+../../../src/include/bdev/blockdev.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.8/include/stddef.h:
+../../../src/include/bdev/defines.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/4.8/include/stdint.h:
 
@@ -54,6 +56,10 @@ io.o: io.c /usr/include/stdc-predef.h ../../../src/include/sfs/io.h \
 /usr/include/x86_64-linux-gnu/gnu/stubs-64.h:
 
 /usr/include/x86_64-linux-gnu/bits/wchar.h:
+
+/usr/lib/gcc/x86_64-linux-gnu/4.8/include/stddef.h:
+
+../../../src/include/sfs/defs.h:
 
 /usr/include/unistd.h:
 
@@ -89,11 +95,13 @@ io.o: io.c /usr/include/stdc-predef.h ../../../src/include/sfs/io.h \
 
 /usr/include/x86_64-linux-gnu/bits/select2.h:
 
+../../../src/include/sfs/io.h:
+
 ../../../src/include/sfs/entry.h:
 
-../../../src/include/bdev/blockdev.h:
+../../../src/include/sfs/mbr.h:
 
-../../../src/include/bdev/defines.h:
+../../../src/include/sfs/utils.h:
 
 ../../../src/include/sfs/debug.h:
 
@@ -114,7 +122,3 @@ io.o: io.c /usr/include/stdc-predef.h ../../../src/include/sfs/io.h \
 /usr/include/x86_64-linux-gnu/bits/stdio.h:
 
 /usr/include/x86_64-linux-gnu/bits/stdio2.h:
-
-../../../src/include/sfs/utils.h:
-
-../../../src/include/sfs/mbr.h:
