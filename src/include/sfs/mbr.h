@@ -2,9 +2,11 @@
 #define _SFS_MBR_
 #include <stdint.h>
 
+#define start_checksum 0x01AC
+#define end_checksum   0x01BC
 struct mbr_t {
         uint8_t  reserved_boot_code[404];
-        uint64_t time_stamp;              /* Seconds since 1 Jan 1970 */
+        uint64_t time_stamp;              /* Seconds since 1 Jan 1970 */ 
         uint64_t data_area_size;          /* In blocks */
         uint64_t index_area_size;         /* In bytes */
         uint8_t  magic_number[3];         /* 0x534653 (SFS in ASCII) */

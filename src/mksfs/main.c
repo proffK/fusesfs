@@ -156,7 +156,7 @@ int main(int argc, char* argv[]) {
                 fprintf(stderr, "Index part size too small.\n");
                 usage(EXIT_MDSML);
         } 
-                /*
+        /*
          * Handler label name
          */
         unsigned length = 0;
@@ -169,17 +169,17 @@ int main(int argc, char* argv[]) {
         }
         /* Check on unsupported symbols */ 
         for (i = 0; i < length; i++)
-                if (label[i] < 0x20 || (label[i] >= 0x80 && label[i] <= 0x9F) 
-                    || label[i] == '"'  || label[i] == '*'  ||  
-                       label[i] == ':'  || label[i] == '<'  ||
-                       label[i] == '>'  || label[i] == '?'  ||
-                       label[i] == '\\' || label[i] == 0x5C ||
-                       label[i] == 0x7F || label[i] == 0xA0 ) {
-
+                if (label[i] < 0x20   || 
+                   (label[i] >= 0x80  && label[i] <= 0x9F) ||
+                    label[i] == '"'   || label[i] == '*'   ||
+                    label[i] == ':'   || label[i] == '<'   ||
+                    label[i] == '>'   || label[i] == '?'   ||
+                    label[i] == '\\'  || label[i] == 0x5C  ||
+                    label[i] == 0x7F  || label[i] == 0xA0) {
                         fprintf(stderr, "Unsupported symbol \'%c\' in volume name.\n",
                                 label[i]);
                         usage(EXIT_LBL);
-                 }
+                }
         /*
          * Start to flll fields of options struct
          */
