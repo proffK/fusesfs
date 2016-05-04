@@ -144,7 +144,8 @@ int main(int argc, char* argv[]) {
                 
         }
         /* Auto align to BLOCK_SIZE (up) */
-        index_size += block_size - index_size % block_size; 
+        if (index_size % block_size != 0)
+                index_size += block_size - index_size % block_size; 
         /* Check index size(maybe file size too small) */
         if (index_size > (file_size - rsrvd_size)) {
                 fprintf(stderr, "Index area size more or equal than file"

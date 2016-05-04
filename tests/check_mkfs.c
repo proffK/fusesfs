@@ -35,9 +35,9 @@ static int clear_timestamp(char* filename)
         if (write(fd, &new_time, sizeof(uint64_t)) == -1)
                 return -1;
 
-        lseek(fd, CHECKSUM, SEEK_SET);
-        if (write(fd, &new_time, sizeof(uint16_t)) == -1)
-                return -1;
+        //lseek(fd, CHECKSUM, SEEK_SET);
+        //if (write(fd, &new_time, sizeof(uint16_t)) == -1)
+        //        return -1;
 
         close(fd);
         

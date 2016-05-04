@@ -123,7 +123,7 @@ am__v_AR_0 = @echo "  AR      " $@;
 am__v_AR_1 = 
 libsfs_a_AR = $(AR) $(ARFLAGS)
 libsfs_a_LIBADD =
-am_libsfs_a_OBJECTS = io.$(OBJEXT) utils.$(OBJEXT)
+am_libsfs_a_OBJECTS = io.$(OBJEXT) utils.$(OBJEXT) sfs_init.$(OBJEXT)
 libsfs_a_OBJECTS = $(am_libsfs_a_OBJECTS)
 AM_V_P = $(am__v_P_$(V))
 am__v_P_ = $(am__v_P_$(AM_DEFAULT_VERBOSITY))
@@ -273,7 +273,7 @@ top_build_prefix = ../../../
 top_builddir = ../../..
 top_srcdir = ../../..
 lib_LIBRARIES = libsfs.a
-libsfs_a_SOURCES = io.c utils.c
+libsfs_a_SOURCES = io.c utils.c sfs_init.c
 AM_CFLAGS = -Wall -Werror -O2 -I$(top_srcdir)/src/include
 all: all-am
 
@@ -353,18 +353,21 @@ distclean-compile:
 	-rm -f *.tab.c
 
 include ./$(DEPDIR)/io.Po
+include ./$(DEPDIR)/sfs_init.Po
 include ./$(DEPDIR)/utils.Po
 
 .c.o:
-	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+	$(am__mv) $$depbase.Tpo $$depbase.Po
 #	$(AM_V_CC)source='$<' object='$@' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(AM_V_CC_no)$(COMPILE) -c -o $@ $<
 
 .c.obj:
-	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
+	$(am__mv) $$depbase.Tpo $$depbase.Po
 #	$(AM_V_CC)source='$<' object='$@' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(AM_V_CC_no)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
