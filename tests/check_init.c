@@ -13,7 +13,6 @@
 
 #define TRUE_IMAGE "trueimage256"
 #define TRUE_SIZE (256 * 40)
-#define TI_ENTRY_START 0x2500
 #define TI_TIME 0
 #define TI_ENTRY_START 0x2600
 #define TI_DEL_BEGIN 0
@@ -33,10 +32,11 @@ START_TEST(test_sfs_init)
 
         sfs_init(&fs, &bdev);
         
-        ck_assert_int_eq(fs->time, TI_TIME);
-        ck_assert_int_eq(fs->entry_start, TI_ENTRY_START);
-        ck_assert_int_eq(fs->del_begin, TI_DEL_BEGIN);
-        ck_assert_int_eq(fs->vol_ident, TI_VOL_INDENT);
+        ck_assert_int_eq(fs.bdev, &bdev);        
+        ck_assert_int_eq(fs.time, TI_TIME);
+        ck_assert_int_eq(fs.entry_start, TI_ENTRY_START);
+        ck_assert_int_eq(fs.del_begin, TI_DEL_BEGIN);
+        ck_assert_int_eq(fs.vol_ident, TI_VOL_IDENT);
 
         bdev.release(&bdev);
         ck_assert(errno == 0);
