@@ -177,8 +177,8 @@ int main(int argc, char* argv[]) {
                     label[i] == '>'   || label[i] == '?'   ||
                     label[i] == '\\'  || label[i] == 0x5C  ||
                     label[i] == 0x7F  || label[i] == 0xA0) {
-                        fprintf(stderr, "Unsupported symbol \'%c\' in volume name.\n",
-                                label[i]);
+                        fprintf(stderr, "Unsupported symbol \'%c\' "
+                                        "in volume name.\n", label[i]);
                         usage(EXIT_LBL);
                 }
         /*
@@ -203,12 +203,16 @@ int main(int argc, char* argv[]) {
                 strcpy(sfs_opts.label, label);
         else 
                 sfs_opts.label[0] = '\0';
-        sfs_opts.file_name = argv[argc - 1];
+        sfs_opts.file_name = malloc(strlen(argv[argc - 1] * sizeof(char)));
+        strcpy(sfs_opts.file_name, argv[argc - 1]);
         /*
          * Create empty SFS image 
          */
-        if (image_create(sfs_opts) != 0)
+        if (image_create(sfs_opts) != 0) {
+                free(sfs_opts.file_name);
                 return EXIT_FAILURE;
+        }
+        free(sfs_opts.file_name);
         return EXIT_SUCCESS;
 }
 
