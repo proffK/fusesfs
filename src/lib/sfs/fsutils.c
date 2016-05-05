@@ -134,7 +134,7 @@ int check_dirs(sfs_unit* fs, char* filepath, entry* entr)
                 if (*cur == '/') {
                         *cur = '\0';
                         ret = search_dir(fs, filepath, entr);
-                        if (ret != 0) {
+                        if (ret == 0) {
                                 SFS_TRACE("Directory in path %s not exist", 
                                                 filepath);
                                 return -1;
