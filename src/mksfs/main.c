@@ -203,7 +203,7 @@ int main(int argc, char* argv[]) {
                 strcpy(sfs_opts.label, label);
         else 
                 sfs_opts.label[0] = '\0';
-        sfs_opts.file_name = malloc(strlen(argv[argc - 1] * sizeof(char)));
+        sfs_opts.file_name = malloc(strlen(argv[argc - 1]) * sizeof(char));
         strcpy(sfs_opts.file_name, argv[argc - 1]);
         /*
          * Create empty SFS image 
