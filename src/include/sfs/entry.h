@@ -7,6 +7,9 @@
 #define MAX_VOL_LABEL           52
 #define INDEX_ENTRY_SIZE        64
 
+#define FIRST_FILE_NAME_SIZE 30
+#define FIRST_DIR_NAME_SIZE 54
+
 enum entry_type {
         VOL_IDENT      = 0x01,
         START_ENTRY    = 0x02,

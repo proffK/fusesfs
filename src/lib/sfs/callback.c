@@ -1,7 +1,9 @@
 #include <sfs/callback.h>
 #include <sfs/entry.h>
-#include <sfs/io.h>
 #include <sfs/defs.h>
+#include <sfs/unit.h>
+#include <sfs/utils.h>
+#include <sfs/io.h>
 #include <sfs/debug.h>
 
 off_t entry_parse(sfs_unit* fs, 
@@ -10,12 +12,13 @@ off_t entry_parse(sfs_unit* fs,
                   void* data)
 {
         off_t start = fs->entry_start;
-        off_t end = fs->vol_indent;
+        off_t end = fs->vol_ident;
 
         SFS_TRACE("Callback start");
         while (start != end) {
                 if (read_entry(fs->bdev, start, entr) == -1) {
                         SFS_TRACE("Read error");
+                        SET_ERRNO(EIO);
                         return 0;
                 }
 
