@@ -1,8 +1,9 @@
-TESTS = check_block_write check_block_read check_block check_mkfs check_utils check_init
+TESTS = check_block_write check_block_read check_block check_mkfs check_utils check_init check_creat
 AM_COLOR_TESTS = always
-check_PROGRAMS = check_block check_mkfs check_block_write check_block_read check_utils check_init
+check_PROGRAMS = check_block check_mkfs check_block_write check_block_read check_utils check_init check_creat
 check_block_SOURCES = check_block.c 
 check_init_SOURCES = check_init.c 
+check_creat_SOURCES = check_creat.c 
 check_mkfs_SOURCES = check_mkfs.c
 check_block_read_SOURCES = check_block_read.c
 check_block_write_SOURCES = check_block_write.c

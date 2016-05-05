@@ -35,6 +35,12 @@
 *.cache
 *.log
 *.status
+*.Po
+*Makefile
+*.in
+*.deps/
+*.log
+*.trs
 
 # vim files
 *.swp

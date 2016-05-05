@@ -1,87 +1,94 @@
 utils.o: utils.c /usr/include/stdc-predef.h \
- ../../../src/include/sfs/utils.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.8/include/stddef.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.8/include/stdint.h /usr/include/stdint.h \
- /usr/include/features.h /usr/include/x86_64-linux-gnu/sys/cdefs.h \
- /usr/include/x86_64-linux-gnu/bits/wordsize.h \
- /usr/include/x86_64-linux-gnu/gnu/stubs.h \
- /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
- /usr/include/x86_64-linux-gnu/bits/wchar.h \
+ ../../../src/include/sfs/utils.h ../../../src/include/sfs/defs.h \
+ /usr/lib64/gcc/x86_64-slackware-linux/5.3.0/include/stddef.h \
+ /usr/lib64/gcc/x86_64-slackware-linux/5.3.0/include/stdint.h \
+ /usr/include/stdint.h /usr/include/features.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-64.h /usr/include/bits/wchar.h \
+ /usr/include/unistd.h /usr/include/bits/posix_opt.h \
+ /usr/include/bits/environments.h /usr/include/bits/types.h \
+ /usr/include/bits/typesizes.h /usr/include/bits/confname.h \
+ /usr/include/getopt.h /usr/include/sys/stat.h /usr/include/time.h \
+ /usr/include/bits/stat.h /usr/include/sys/time.h \
+ /usr/include/bits/time.h /usr/include/sys/select.h \
+ /usr/include/bits/select.h /usr/include/bits/sigset.h \
  ../../../src/include/sfs/mbr.h ../../../src/include/sfs/entry.h \
- ../../../src/include/sfs/defs.h /usr/include/unistd.h \
- /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
- /usr/include/x86_64-linux-gnu/bits/environments.h \
- /usr/include/x86_64-linux-gnu/bits/types.h \
- /usr/include/x86_64-linux-gnu/bits/typesizes.h \
- /usr/include/x86_64-linux-gnu/bits/confname.h /usr/include/getopt.h \
- /usr/include/x86_64-linux-gnu/bits/unistd.h \
- /usr/include/x86_64-linux-gnu/sys/stat.h /usr/include/time.h \
- /usr/include/x86_64-linux-gnu/bits/stat.h \
- /usr/include/x86_64-linux-gnu/sys/time.h \
- /usr/include/x86_64-linux-gnu/bits/time.h \
- /usr/include/x86_64-linux-gnu/sys/select.h \
- /usr/include/x86_64-linux-gnu/bits/select.h \
- /usr/include/x86_64-linux-gnu/bits/sigset.h \
- /usr/include/x86_64-linux-gnu/bits/select2.h
+ /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h \
+ /usr/include/wchar.h \
+ /usr/lib64/gcc/x86_64-slackware-linux/5.3.0/include/stdarg.h \
+ /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
+ /usr/include/bits/stdio.h
 
 /usr/include/stdc-predef.h:
 
 ../../../src/include/sfs/utils.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.8/include/stddef.h:
+../../../src/include/sfs/defs.h:
 
-/usr/lib/gcc/x86_64-linux-gnu/4.8/include/stdint.h:
+/usr/lib64/gcc/x86_64-slackware-linux/5.3.0/include/stddef.h:
+
+/usr/lib64/gcc/x86_64-slackware-linux/5.3.0/include/stdint.h:
 
 /usr/include/stdint.h:
 
 /usr/include/features.h:
 
-/usr/include/x86_64-linux-gnu/sys/cdefs.h:
+/usr/include/sys/cdefs.h:
 
-/usr/include/x86_64-linux-gnu/bits/wordsize.h:
+/usr/include/bits/wordsize.h:
 
-/usr/include/x86_64-linux-gnu/gnu/stubs.h:
+/usr/include/gnu/stubs.h:
 
-/usr/include/x86_64-linux-gnu/gnu/stubs-64.h:
+/usr/include/gnu/stubs-64.h:
 
-/usr/include/x86_64-linux-gnu/bits/wchar.h:
+/usr/include/bits/wchar.h:
+
+/usr/include/unistd.h:
+
+/usr/include/bits/posix_opt.h:
+
+/usr/include/bits/environments.h:
+
+/usr/include/bits/types.h:
+
+/usr/include/bits/typesizes.h:
+
+/usr/include/bits/confname.h:
+
+/usr/include/getopt.h:
+
+/usr/include/sys/stat.h:
+
+/usr/include/time.h:
+
+/usr/include/bits/stat.h:
+
+/usr/include/sys/time.h:
+
+/usr/include/bits/time.h:
+
+/usr/include/sys/select.h:
+
+/usr/include/bits/select.h:
+
+/usr/include/bits/sigset.h:
 
 ../../../src/include/sfs/mbr.h:
 
 ../../../src/include/sfs/entry.h:
 
-../../../src/include/sfs/defs.h:
+/usr/include/stdio.h:
 
-/usr/include/unistd.h:
+/usr/include/libio.h:
 
-/usr/include/x86_64-linux-gnu/bits/posix_opt.h:
+/usr/include/_G_config.h:
 
-/usr/include/x86_64-linux-gnu/bits/environments.h:
+/usr/include/wchar.h:
 
-/usr/include/x86_64-linux-gnu/bits/types.h:
+/usr/lib64/gcc/x86_64-slackware-linux/5.3.0/include/stdarg.h:
 
-/usr/include/x86_64-linux-gnu/bits/typesizes.h:
+/usr/include/bits/stdio_lim.h:
 
-/usr/include/x86_64-linux-gnu/bits/confname.h:
+/usr/include/bits/sys_errlist.h:
 
-/usr/include/getopt.h:
-
-/usr/include/x86_64-linux-gnu/bits/unistd.h:
-
-/usr/include/x86_64-linux-gnu/sys/stat.h:
-
-/usr/include/time.h:
-
-/usr/include/x86_64-linux-gnu/bits/stat.h:
-
-/usr/include/x86_64-linux-gnu/sys/time.h:
-
-/usr/include/x86_64-linux-gnu/bits/time.h:
-
-/usr/include/x86_64-linux-gnu/sys/select.h:
-
-/usr/include/x86_64-linux-gnu/bits/select.h:
-
-/usr/include/x86_64-linux-gnu/bits/sigset.h:
-
-/usr/include/x86_64-linux-gnu/bits/select2.h:
+/usr/include/bits/stdio.h:

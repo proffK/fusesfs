@@ -6,7 +6,7 @@
 struct pair {
         int start;
         int cur;
-}
+};
 
 #define CUR ((struct pair*) count)->cur
 #define START ((struct pair*) count)->start
@@ -29,17 +29,6 @@ static int search_free_entry(sfs_unit* fs, entry* entr, off_t entry_off, void* c
 #undef CUR
 #undef START
 
-static int release_entry(sfs_unit* fs, entry* entr, void* count) 
-{
-        entr->entry_type = UNUSED_ENTRY;
-
-        *((int*) count)--;
-        if (*((int*) count)== 0) 
-                return 1;
-
-        return 0;
-}
-
 off_t alloc_entry(sfs_unit* fs, entry* entr, int n)
 {
         struct pair p;
@@ -50,8 +39,8 @@ off_t alloc_entry(sfs_unit* fs, entry* entr, int n)
                 return 0;
         }
 
-        p->start = n;
-        p->cur = n;
+        p.start = n;
+        p.cur = n;
 
         if ((ret = entry_parse(fs, entr, search_free_entry, &p)) == 0) 
                 return 0;
@@ -61,24 +50,23 @@ off_t alloc_entry(sfs_unit* fs, entry* entr, int n)
         return ret;
 }
 
-static int free_one_entry(sfs_unit* fs, off_t entry)
+static int free_one_entry(sfs_unit* fs, entry* entr, off_t entr_off)
 {
-        entry entr;
-
-        if (read_entry(fs->bdev, &entr, entry) == -1) {
+        if (read_entry(fs->bdev, entr_off, entr) == -1) {
                 return -1;
         }
-        entry->entry_type = UNUSED_ENTRY;
+        entr->entry_type = UNUSED_ENTRY;
         return 0;
 }
 
-int free_entry(sfs_unit* fs, off_t entry, int n)
+int free_entry(sfs_unit* fs, entry* entr, off_t entr_off, int n)
 {
         int i = 0;
+
         for (i = 0; i < n; ++i) {
-                if (free_one_entry(fs, entry) == -1)
+                if (free_one_entry(fs, entr, entr_off) == -1)
                         return -1;
-                entry += INDEX_ENTRY_SIZE;
+                entr_off += INDEX_ENTRY_SIZE;
         }
         return 0;
 }
