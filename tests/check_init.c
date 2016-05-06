@@ -14,7 +14,7 @@
 #define TRUE_IMAGE "trueimage256"
 #define TRUE_SIZE (256 * 40)
 #define TI_TIME 0
-#define TI_ENTRY_START 0x2600
+#define TI_ENTRY_START 0x1400
 #define TI_DEL_BEGIN 0
 #define TI_VOL_IDENT 0x27C0
 
