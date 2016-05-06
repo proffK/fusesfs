@@ -13,7 +13,7 @@ static inline uint8_t count_entry(size_t len)
 {
         if (len <= FIRST_DIR_NAME_SIZE) return 1;
 
-        return (((len - FIRST_DIR_NAME_SIZE) / (INDEX_ENTRY_SIZE)) + 
+        return 1 + (((len - FIRST_DIR_NAME_SIZE) / (INDEX_ENTRY_SIZE)) + 
                !!(len - FIRST_DIR_NAME_SIZE) % (INDEX_ENTRY_SIZE));
 }
 
@@ -53,19 +53,19 @@ int sfs_mkdir(sfs_unit* fs, const char* dirpath)
         } else {
                 memcpy(AS_DIR(&entr)->dir_name, (char*) dirpath,
                        FIRST_DIR_NAME_SIZE);
-                len -= FIRST_FILE_NAME_SIZE;
-                dirpath += FIRST_FILE_NAME_SIZE;
+                len -= FIRST_DIR_NAME_SIZE;
+                dirpath += FIRST_DIR_NAME_SIZE;
         }
 
+        n--;
         AS_DIR(&entr)->time_stamp = get_time();
-        AS_DIR(&entr)->entry_type = FILE_ENTRY;
+        AS_DIR(&entr)->entry_type = DIR_ENTRY;
         AS_DIR(&entr)->cont_entries = n;
         write_entry(fs->bdev, start, &entr);
-        n--;
         start += INDEX_ENTRY_SIZE;
 
         while (n--) {
-                memcpy(&entr, (char*) dirpath, INDEX_ENTRY_SIZE);
+                strncpy((char*) &entr, dirpath, INDEX_ENTRY_SIZE);
                 len -= INDEX_ENTRY_SIZE;
                 dirpath += INDEX_ENTRY_SIZE;
                 write_entry(fs->bdev, start, &entr);
