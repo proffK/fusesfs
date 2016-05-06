@@ -125,7 +125,8 @@ libsfs_a_AR = $(AR) $(ARFLAGS)
 libsfs_a_LIBADD =
 am_libsfs_a_OBJECTS = io.$(OBJEXT) utils.$(OBJEXT) sfs_init.$(OBJEXT) \
 	sfs_creat.$(OBJEXT) sfs_unlink.$(OBJEXT) sfs_mkdir.$(OBJEXT) \
-	fsutils.$(OBJEXT) callback.$(OBJEXT) alloc.$(OBJEXT)
+	fsutils.$(OBJEXT) callback.$(OBJEXT) alloc.$(OBJEXT) \
+	sfs_release.$(OBJEXT)
 libsfs_a_OBJECTS = $(am_libsfs_a_OBJECTS)
 AM_V_P = $(am__v_P_$(V))
 am__v_P_ = $(am__v_P_$(AM_DEFAULT_VERBOSITY))
@@ -275,7 +276,7 @@ top_build_prefix = ../../../
 top_builddir = ../../..
 top_srcdir = ../../..
 lib_LIBRARIES = libsfs.a
-libsfs_a_SOURCES = io.c utils.c sfs_init.c sfs_creat.c sfs_unlink.c sfs_mkdir.c fsutils.c callback.c alloc.c
+libsfs_a_SOURCES = io.c utils.c sfs_init.c sfs_creat.c sfs_unlink.c sfs_mkdir.c fsutils.c callback.c alloc.c sfs_release.c
 AM_CFLAGS = -Wall -Werror -O2 -I$(top_srcdir)/src/include
 all: all-am
 
@@ -361,6 +362,7 @@ include ./$(DEPDIR)/io.Po
 include ./$(DEPDIR)/sfs_creat.Po
 include ./$(DEPDIR)/sfs_init.Po
 include ./$(DEPDIR)/sfs_mkdir.Po
+include ./$(DEPDIR)/sfs_release.Po
 include ./$(DEPDIR)/sfs_unlink.Po
 include ./$(DEPDIR)/utils.Po
 

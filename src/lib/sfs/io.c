@@ -62,7 +62,7 @@ size_t read_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
         memcpy(data, buf, size);
         return ret_size;
 }
-
+//#define dev->write(x,y,z,t) 0
 size_t write_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
 {
         size_t bsize = dev->block_size;

@@ -65,7 +65,8 @@ int sfs_init(sfs_unit* fs, blockdev* bdev)
         /* Write zero to time stamp */
         if (write_data(bdev, offsetof(vol_ident_entry, time_stamp) + 
                              fs->entry_start,
-                       (uint8_t*)&(new_timestamp), sizeof(new_timestamp)) == -1)
+                       (uint8_t*)&(new_timestamp), sizeof(new_timestamp)) == -1) {
                 return -1;
+        }
         return 0;
 }
