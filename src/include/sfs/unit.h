@@ -22,6 +22,7 @@ typedef struct {
 typedef struct {
         uint64_t time;
         size_t size;
+        off_t off;
         flag_t type;
 } sfs_attr;
 
