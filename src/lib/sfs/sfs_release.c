@@ -8,9 +8,9 @@
 
 int sfs_release(sfs_unit* fs)
 {       
-        if (write_data(&bdev, fs->vol_ident + 
-                              offsetof(vol_ident_entry, time_stamp),
-                       fs->time, sizeof(fs->time)) == -1)
+        if (write_data(fs->bdev, fs->vol_ident + 
+                                 offsetof(vol_ident_entry, time_stamp),
+                       (uint8_t*)&(fs->time), sizeof(fs->time)) == -1)
                 return -1;
         return 0;
 }

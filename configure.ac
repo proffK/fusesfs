@@ -12,6 +12,7 @@ AC_CONFIG_FILES([
                  src/lib/Makefile
                  src/lib/sfs/Makefile
                  tests/Makefile
+                 src/fuse/Makefile
                  ])
 
 PKG_CHECK_MODULES([CHECK], [check])
