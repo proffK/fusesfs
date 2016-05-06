@@ -44,6 +44,7 @@ int image_create(struct sfs_options sfs_opts)
         start_entry st_entry;
         unused_entry remain_area;
         del_file_entry del_entry;
+        dir_entry zero_dir;
         SFS_TRACE("Calculating aligned index area position.");
         size_t g_offset_start = sfs_opts.total_block * block_size - 
                                 sfs_opts.index_size; 
@@ -112,6 +113,15 @@ int image_create(struct sfs_options sfs_opts)
         strncpy((char*)del_entry.name, "*free", 29);
         g_offset_start += INDEX_ENTRY_SIZE;
         if (write_data(&bdev, g_offset_start, (uint8_t*)(&del_entry),
+                       INDEX_ENTRY_SIZE) == -1)
+                return -1;
+        /* Write zero directory */
+        memset(&zero_dir, 0, INDEX_ENTRY_SIZE);
+        zero_dir.entry_type = DIR_ENTRY;
+        zero_dir.time_stamp = 0;
+        zero_dir.dir_name[0] = '\0';
+        g_offset_start += INDEX_ENTRY_SIZE;
+        if (write_data(&bdev, g_offset_start, (uint8_t*)(&zero_dir),
                        INDEX_ENTRY_SIZE) == -1)
                 return -1;
         /* Fill remainig area of unused entries */
