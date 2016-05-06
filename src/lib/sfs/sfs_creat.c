@@ -79,5 +79,6 @@ int sfs_creat(sfs_unit* fs, const char* filepath)
                 start += INDEX_ENTRY_SIZE;
         }
 
+        update(fs);
         return 0;
 }

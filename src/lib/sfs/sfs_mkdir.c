@@ -72,6 +72,7 @@ int sfs_mkdir(sfs_unit* fs, const char* dirpath)
                 start += INDEX_ENTRY_SIZE;
         }
 
+        update(fs);
         return 0;
 }
 

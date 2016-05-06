@@ -10,14 +10,6 @@
 
 #define AS_FILE(entr) ((del_file_entry*) (entr))
 
-static inline uint8_t count_entry(size_t len)
-{
-        if (len <= FIRST_FILE_NAME_SIZE) return 1;
-
-        return (((len - FIRST_FILE_NAME_SIZE) / (INDEX_ENTRY_SIZE)) + 
-               !!(len - FIRST_FILE_NAME_SIZE) % (INDEX_ENTRY_SIZE));
-}
-
 int sfs_unlink(sfs_unit* fs, const char* filepath)
 {
         entry entr;
@@ -43,6 +35,7 @@ int sfs_unlink(sfs_unit* fs, const char* filepath)
         n--;
         free_entry(fs, &entr, start, n);
 
+        update(fs);
         return 0;
 }
 
