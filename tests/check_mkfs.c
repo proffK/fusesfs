@@ -78,7 +78,7 @@ START_TEST(test_mkfs)
 
         pid = fork();
         if (pid == 0) {
-                execlp("../src/mksfs/mksfs", "mksfs", "-b", "512", TESTFILE_NAME, NULL);
+                execlp("../src/mksfs/mksfs", "mksfs", "-b", "512", "-m", "50%", TESTFILE_NAME, NULL);
         }
         wait(&ret);
         ck_assert_int_eq(ret, 0);
@@ -97,7 +97,7 @@ START_TEST(test_mkfs)
 
         pid = fork();
         if (pid == 0) {
-                execlp("../src/mksfs/mksfs", "mksfs", "-b", "256", TESTFILE_NAME, NULL);
+                execlp("../src/mksfs/mksfs", "mksfs", "-b", "256", "-m", "50%", TESTFILE_NAME, NULL);
         }
         wait(&ret);
         ck_assert_int_eq(ret, 0);
@@ -116,7 +116,7 @@ START_TEST(test_mkfs)
 
         pid = fork();
         if (pid == 0) {
-                execlp("../src/mksfs/mksfs", "mksfs", "-b", "1024", TESTFILE_NAME, NULL);
+                execlp("../src/mksfs/mksfs", "mksfs", "-b", "1024", "-m", "50%", TESTFILE_NAME, NULL);
         }
         wait(&ret);
         ck_assert_int_eq(ret, 0);

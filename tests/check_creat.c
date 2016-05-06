@@ -14,7 +14,7 @@
 #define TRUE_IMAGE "trueimage512"
 #define TRUE_SIZE (256 * 40)
 #define TI_TIME 0
-#define TI_ENTRY_START 0x2600
+#define TI_ENTRY_START 0x1400
 #define TI_DEL_BEGIN 0
 #define TI_VOL_IDENT 0x27C0
 
@@ -23,6 +23,7 @@ START_TEST(test_sfs_creat)
         blockdev bdev;
         sfs_unit fs;
         char teststr[] = "nodir/testfile";
+        char teststr2[] = "testfiletestfiletestfiletestfiletestfile/test";
 
         fdev.fd = -1;
         
@@ -42,7 +43,14 @@ START_TEST(test_sfs_creat)
         ck_assert(sfs_creat(&fs, "testfile") == 0);
         ck_assert(sfs_creat(&fs, "testfile") == -1);
         ck_assert(sfs_creat(&fs, "test*ile") == -1);
-        ck_assert_int_eq(sfs_creat(&fs, teststr), -1);
+        ck_assert(sfs_creat(&fs, teststr) == -1);
+        //ck_assert(sfs_creat(&fs, "testfiletestfiletestfiletestfiletestfile") == 0);
+        //ck_assert(sfs_creat(&fs, "testfiletestfiletestfiletestfiletestfile") == -1);
+        ck_assert(sfs_creat(&fs, teststr2) == -1);
+        ck_assert(sfs_creat(&fs, "testfil1testfil2testfil3testfil4testfil5testfil6testfil7"
+                                 "testfil8testfil9testfil0testfil1testfil2testfil3testfil4") == 0);
+        ck_assert(sfs_creat(&fs, "testfil1testfil2testfil3testfil4testfil5testfil6testfil7"
+                                 "testfil8testfil9testfil0testfil1testfil2testfil3testfil4") == -1);
 
         bdev.release(&bdev);
         ck_assert(errno == 0);
@@ -107,7 +115,7 @@ int main(void) {
         number_failed = srunner_ntests_failed(sr);
         srunner_free(sr);
         
-        unlink("testfile");
+//        unlink("testfile");
 
         return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

@@ -19,6 +19,11 @@ typedef struct {
         flag_t type;
 } diriter;
 
+enum iter_types {
+        FILE_ITER_TYPE = 1,
+        DIR_ITER_TYPE
+};
+
 int update(sfs_unit* fs);
 
 int sfs_init(sfs_unit* fs, blockdev* bdev);
