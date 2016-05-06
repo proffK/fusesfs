@@ -41,6 +41,8 @@
 *.deps/
 *.log
 *.trs
+configure
+*.m4
 
 # vim files
 *.swp

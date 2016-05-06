@@ -5,11 +5,70 @@
 #include <sfs/debug.h>
 #include <sfs/callback.h>
 
-static int read_file_entry(sfs_unit* fs, entry* entr, off_t entry_off, void* data)
+static int check_file_mask(sfs_unit* fs, entry* entr, 
+                           off_t entry_off, void* data)
+{
+        char* curin = (char*) data;
+        char* cur = NULL;
+        int c = 0;
+
+        if (entr->entry_type != FILE_ENTRY && entr->entry_type != DIR_ENTRY) 
+                return 0;
+
+        SFS_TRACE("Cheking mask %s", (char*) data);
+
+        if (entr->entry_type == FILE_ENTRY) {
+                cur = (char*) ((file_entry*) entr)->name;
+                c = FIRST_FILE_NAME_SIZE;
+                while (*curin != '\0' && c != 0) {
+                        if (*cur != *curin) return 0;
+                        c--;
+                        cur++;
+                        curin++;
+                }
+        }
+
+        if (entr->entry_type == DIR_ENTRY) {
+                cur = (char*) ((dir_entry*) entr)->dir_name;
+                c = FIRST_DIR_NAME_SIZE;
+                while (*curin != '\0' && c != 0) {
+                        if (*cur != *curin) return 0;
+                        c--;
+                        cur++;
+                        curin++;
+                }
+        }
+
+        entry_off += INDEX_ENTRY_SIZE;
+        read_entry(fs->bdev, entry_off, entr);
+        c = INDEX_ENTRY_SIZE;
+        cur = (char*) entr;
+        while (*curin != '\0' && c != 0) {
+                if (*cur != *curin) return 0;
+                c--;
+                cur++;
+                curin++;
+                if (c == 0) {
+                        entry_off += INDEX_ENTRY_SIZE;
+                        read_entry(fs->bdev, entry_off, entr);
+                        c = INDEX_ENTRY_SIZE;
+                        cur = (char*) entr;
+                }
+
+        }
+
+        SFS_TRACE("Found mask %s", (char*) data);
+        return 1;
+}
+
+static int read_file_entry(sfs_unit* fs, entry* entr, 
+                           off_t entry_off, void* data)
 {
         if (entr->entry_type != FILE_ENTRY) return 0;
 
-        if (strncmp(data, (char*) ((file_entry*) entr)->name, 
+        if (strnlen((char*) ((file_entry*) entr)->name, FIRST_FILE_NAME_SIZE) 
+            == strnlen(data, FIRST_FILE_NAME_SIZE) &&
+                        strncmp(data, (char*) ((file_entry*) entr)->name, 
                           FIRST_FILE_NAME_SIZE) == 0) {
                 SFS_TRACE("Found file with offset %lu", entry_off);
                 return 1;
@@ -19,11 +78,14 @@ static int read_file_entry(sfs_unit* fs, entry* entr, off_t entry_off, void* dat
 
 }
 
-static int read_dir_entry(sfs_unit* fs, entry* entr, off_t entry_off, void* data)
+static int read_dir_entry(sfs_unit* fs, entry* entr, 
+                          off_t entry_off, void* data)
 {
         if (entr->entry_type != DIR_ENTRY) return 0;
 
-        if (strncmp(data, (char*) ((dir_entry*) entr)->dir_name, 
+        if (strnlen((char*) ((dir_entry*) entr)->dir_name, FIRST_DIR_NAME_SIZE) 
+            == strnlen(data, FIRST_DIR_NAME_SIZE) &&
+                strncmp(data, (char*) ((dir_entry*) entr)->dir_name, 
                           FIRST_DIR_NAME_SIZE) == 0) {
                 SFS_TRACE("Found directory with offset %lu", entry_off);
                 return 1;
@@ -70,11 +132,48 @@ off_t search_file(sfs_unit* fs, char* filepath, entry* entr)
                         return 0;
                 }
 
-                filepath += FIRST_FILE_NAME_SIZE;
+                filepath += INDEX_ENTRY_SIZE;
                 cur_off += INDEX_ENTRY_SIZE;
         }
 
         return start_off;
+}
+
+off_t search_file_mask(sfs_unit* fs, char* filepath, 
+                       entry* entr, off_t entr_off)
+{
+        SET_ERRNO(0);
+
+        if (!(fs && filepath && entr)) {
+                SET_ERRNO(EFAULT);
+                return 0;
+        }
+
+        while (entr_off != fs->vol_ident) {
+                read_entry(fs->bdev, entr_off, entr);
+                SFS_TRACE("Reading entry %lu", entr_off);
+                if (entr->entry_type == FILE_ENTRY) {
+                        if (check_file_mask(fs, entr, 
+                                            entr_off, filepath) != 0) {
+                                read_entry(fs->bdev, entr_off, entr);
+                                return entr_off;
+                        } else {
+                                entr_off += INDEX_ENTRY_SIZE;
+                        }
+                } else if (entr->entry_type == DIR_ENTRY) {
+                        if (check_file_mask(fs, entr, 
+                                            entr_off, filepath) != 0) {
+                                read_entry(fs->bdev, entr_off, entr);
+                                return entr_off;
+                        } else {
+                                entr_off += INDEX_ENTRY_SIZE;
+                        }
+                } else {
+                        entr_off += INDEX_ENTRY_SIZE;
+                }
+        }
+
+        return 0;
 }
 
 off_t search_dir(sfs_unit* fs, char* filepath, entry* entr)
@@ -115,7 +214,7 @@ off_t search_dir(sfs_unit* fs, char* filepath, entry* entr)
                         return 0;
                 }
 
-                filepath += FIRST_DIR_NAME_SIZE;
+                filepath += INDEX_ENTRY_SIZE;
                 cur_off += INDEX_ENTRY_SIZE;
         }
 
@@ -134,15 +233,90 @@ int check_dirs(sfs_unit* fs, char* filepath, entry* entr)
                 if (*cur == '/') {
                         *cur = '\0';
                         ret = search_dir(fs, filepath, entr);
-                        if (ret != 0) {
+                        if (ret == 0) {
                                 SFS_TRACE("Directory in path %s not exist", 
                                                 filepath);
+                                *cur = '/';
                                 return -1;
                         }
                         *cur = '/';
                 }
                 cur++;
         }
+
+        return 0;
+}
+
+int read_file_name(sfs_unit* fs, file_entry* entr, 
+                   off_t file_off, char* str, size_t len)
+{
+        char* curin = (char*) entr->name;
+        char* curout = str;
+        int curpos = FIRST_FILE_NAME_SIZE;
+        SFS_TRACE("Reading filename with len %lu", len);
+
+        while (len > 1 && *curin != '\0') {
+                *curout = *curin;
+                curin++;
+                curout++;
+                len--;
+                curpos--;
+                if (curpos == 0) {
+                        file_off += INDEX_ENTRY_SIZE;
+                        read_entry(fs->bdev, file_off, (entry*) entr);
+                        curin = (char*) entr;
+                        curpos = INDEX_ENTRY_SIZE;
+                }
+        }
+
+        if (len == 1 && curin == '\0') {
+                ++curout;
+                *curout = '\0';
+                return 0;
+        }
+
+        if (len == 1) {
+                SET_ERRNO(ENOMEM);
+                return -1;
+        }
+
+        SFS_TRACE("Read filename %s", str);
+        return 0;
+}
+
+int read_dir_name(sfs_unit* fs, dir_entry* entr, 
+                  off_t dir_off, char* str, size_t len)
+{
+        char* curin = (char*) entr->dir_name;
+        char* curout = str;
+        int curpos = FIRST_DIR_NAME_SIZE;
+        SFS_TRACE("Reading dirname with len %lu", len);
+
+        while (len > 1 && *curin != '\0') {
+                *curout = *curin;
+                curin++;
+                curout++;
+                len--;
+                curpos--;
+                if (curpos == 0) {
+                        dir_off += INDEX_ENTRY_SIZE;
+                        read_entry(fs->bdev, dir_off, (entry*) entr);
+                        curin = (char*) entr;
+                        curpos = INDEX_ENTRY_SIZE;
+                }
+        }
+
+        if (len == 1 && curin == '\0') {
+                ++curout;
+                *curout = '\0';
+                return 0;
+        }
+
+        if (len == 1) {
+                SET_ERRNO(ENOMEM);
+                return -1;
+        }
+        SFS_TRACE("Succesfully read dirname %s", str);
 
         return 0;
 }

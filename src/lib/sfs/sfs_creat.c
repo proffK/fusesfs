@@ -13,7 +13,7 @@ static inline uint8_t count_entry(size_t len)
 {
         if (len <= FIRST_FILE_NAME_SIZE) return 1;
 
-        return (((len - FIRST_FILE_NAME_SIZE) / (INDEX_ENTRY_SIZE)) + 
+        return 1 + (((len - FIRST_FILE_NAME_SIZE) / (INDEX_ENTRY_SIZE)) + 
                !!(len - FIRST_FILE_NAME_SIZE) % (INDEX_ENTRY_SIZE));
 }
 
@@ -49,10 +49,10 @@ int sfs_creat(sfs_unit* fs, const char* filepath)
         n = count_entry(len);
 
         if ((start = alloc_entry(fs, &entr, n)) == 0) {
-                SFS_TRACE("Not enough space for file %s", filepath);
+                SFS_TRACE("Not enough space for file %s %d", filepath, n);
                 return -1;
         }
-        SFS_TRACE("Start: %lX %s", start, filepath);
+        SFS_TRACE("Start: %lX %s %d", start, filepath, n);
 
         if (n == 1) {
                 strcpy((char*) AS_FILE(&entr)->name, filepath);
@@ -71,7 +71,8 @@ int sfs_creat(sfs_unit* fs, const char* filepath)
         start += INDEX_ENTRY_SIZE;
 
         while (n--) {
-                memcpy(&entr, (char*) filepath, INDEX_ENTRY_SIZE);
+                SFS_TRACE("Write cont entry %s", filepath);
+                strncpy((char*) &entr, filepath, INDEX_ENTRY_SIZE);
                 len -= INDEX_ENTRY_SIZE;
                 filepath += INDEX_ENTRY_SIZE;
                 write_entry(fs->bdev, start, &entr);
