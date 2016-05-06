@@ -28,11 +28,13 @@ int sfs_getattr(sfs_unit* fs, const char* filepath, sfs_attr* attr)
                 attr->type = FILE_ITER_TYPE;
                 attr->time = ((file_entry*) &entr)->time_stamp;
                 attr->size = ((file_entry*) &entr)->size;
+                attr->off = off;
         }
         if (entr.entry_type == DIR_ENTRY) {
                 attr->type = DIR_ITER_TYPE;
                 attr->time = ((dir_entry*) &entr)->time_stamp;
                 attr->size = 0;
+                attr->off = off;
         }
 
         return 0;
