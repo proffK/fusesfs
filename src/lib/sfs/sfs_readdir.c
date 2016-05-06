@@ -21,6 +21,7 @@ static int is_leaf(char* path) {
 int sfs_readdir(sfs_unit* fs, diriter* iter)
 {
         entry entr;
+        int add = 1; 
         size_t len = iter->len;
         size_t start_len = 0;
         char* name = iter->filename;
@@ -40,9 +41,10 @@ int sfs_readdir(sfs_unit* fs, diriter* iter)
                 off = fs->entry_start;
 
         start_len = strnlen(iter->filename, len);
+        if (start_len == 0) add = 0;
 
 RESTART:
-        name[start_len + 1] = '\0';
+        name[start_len + add] = '\0';
         SFS_TRACE("Try to search file mask %s", name);
         off = search_file_mask(fs, name, &entr, off);
 
@@ -59,13 +61,13 @@ RESTART:
                         off += INDEX_ENTRY_SIZE;
                         goto RESTART;
                 }
-                name += (start_len + 1);
+                name += (start_len + add);
                 if (is_leaf(name) == 0) {
                         off += INDEX_ENTRY_SIZE;
                         name -= (start_len + 1);
                         goto RESTART;
                 }
-                name -= (start_len + 1);
+                name -= (start_len + add);
                 iter->type = FILE_ITER_TYPE;
         }
 
@@ -77,13 +79,13 @@ RESTART:
                         off += INDEX_ENTRY_SIZE;
                         goto RESTART;
                 }
-                name += (start_len + 1);
+                name += (start_len + add);
                 if (is_leaf(name) == 0) {
                         off += INDEX_ENTRY_SIZE;
-                        name -= (start_len + 1);
+                        name -= (start_len + add);
                         goto RESTART;
                 }
-                name -= (start_len + 1);
+                name -= (start_len + add);
                 iter->type = DIR_ITER_TYPE;
         }
         iter->cur_off = off + INDEX_ENTRY_SIZE;

@@ -11,7 +11,8 @@ struct pair {
 #define CUR ((struct pair*) count)->cur
 #define START ((struct pair*) count)->start
 
-static int search_free_entry(sfs_unit* fs, entry* entr, off_t entry_off, void* count) 
+static int search_free_entry(sfs_unit* fs, entry* entr, 
+                             off_t entry_off, void* count) 
 {
         if (entr->entry_type != UNUSED_ENTRY) {
                 if (CUR != START) 
@@ -28,6 +29,19 @@ static int search_free_entry(sfs_unit* fs, entry* entr, off_t entry_off, void* c
 
 #undef CUR
 #undef START
+
+static int search_del_space(sfs_unit* fs, entry* entr, 
+                             off_t entry_off, void* bsize)
+{
+        if (entr->entry_type != DEL_FILE_ENTRY) 
+                return 0;
+
+        if (((del_file_entry*) entr)->end_block -
+            ((del_file_entry*) entr)->start_block >= *((size_t*) bsize))
+                return 1;
+
+        return 0;
+}
 
 off_t alloc_entry(sfs_unit* fs, entry* entr, int n)
 {
@@ -71,12 +85,14 @@ int free_entry(sfs_unit* fs, entry* entr, off_t entr_off, int n)
         return 0;
 }
 
-off_t alloc_space(sfs_unit* fs, size_t size)
+off_t alloc_space(sfs_unit* fs, size_t size, entry* entr)
 {
-        return 0; // TODO:
-}
+        size_t block_size = fs->bdev->block_size;
+        size_t bsize = block_size * ((size / block_size) +
+                        !!(size % block_size));
+        off_t ret = 0;
 
-int free_space(sfs_unit* fs, off_t space)
-{
-        return 0; // TODO:
+        ret = entry_parse(fs, entr, search_del_space, &bsize);
+
+        return ret;
 }

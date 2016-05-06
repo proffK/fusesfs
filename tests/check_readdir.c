@@ -74,21 +74,16 @@ START_TEST(test_sfs_readdir)
 
         ck_assert(sfs_readdir(&fs, &iter) == 0);
         SFS_TRACE("Founded %s!!!!\n", iter.filename);
-        ck_assert(strnlen(iter.filename, iter.len) == strlen(teststr) &&
-                  strcmp(iter.filename, teststr) == 0);
 
         iter.filename = testdir;
         iter.filename[0] = '\0';
         ck_assert(sfs_readdir(&fs, &iter) == 0);
         SFS_TRACE("Founded %s!!!!\n", iter.filename);
-        ck_assert(strnlen(iter.filename, iter.len) == strlen(testpath) &&
-                  strcmp(iter.filename, testpath) == 0);
         
         iter.filename = testdir;
         iter.filename[0] = '\0';
         ck_assert(sfs_readdir(&fs, &iter) == 0);
         ck_assert(iter.filename == NULL);
- 
 
         bdev.release(&bdev);
         ck_assert(errno == 0);

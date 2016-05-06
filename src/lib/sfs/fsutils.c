@@ -17,6 +17,10 @@ static int check_file_mask(sfs_unit* fs, entry* entr,
 
         SFS_TRACE("Cheking mask %s", (char*) data);
 
+        if (*curin == '\0') {
+                return 1;
+        }
+
         if (entr->entry_type == FILE_ENTRY) {
                 cur = (char*) ((file_entry*) entr)->name;
                 c = FIRST_FILE_NAME_SIZE;
@@ -270,7 +274,6 @@ int read_file_name(sfs_unit* fs, file_entry* entr,
         }
 
         if (len == 1 && curin == '\0') {
-                ++curout;
                 *curout = '\0';
                 return 0;
         }
@@ -280,6 +283,8 @@ int read_file_name(sfs_unit* fs, file_entry* entr,
                 return -1;
         }
 
+        *curout = '\0';
+ 
         SFS_TRACE("Read filename %s", str);
         return 0;
 }
@@ -307,7 +312,6 @@ int read_dir_name(sfs_unit* fs, dir_entry* entr,
         }
 
         if (len == 1 && curin == '\0') {
-                ++curout;
                 *curout = '\0';
                 return 0;
         }
@@ -316,6 +320,8 @@ int read_dir_name(sfs_unit* fs, dir_entry* entr,
                 SET_ERRNO(ENOMEM);
                 return -1;
         }
+
+        *curout = '\0';
         SFS_TRACE("Succesfully read dirname %s", str);
 
         return 0;

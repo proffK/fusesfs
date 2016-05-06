@@ -19,12 +19,21 @@ typedef struct {
         flag_t type;
 } diriter;
 
+typedef struct {
+        uint64_t time;
+        size_t size;
+        flag_t type;
+} sfs_attr;
+
 enum iter_types {
         FILE_ITER_TYPE = 1,
         DIR_ITER_TYPE
 };
 
-int update(sfs_unit* fs);
+static inline void update(sfs_unit* fs)
+{
+        fs->time = get_time();
+}
 
 int sfs_init(sfs_unit* fs, blockdev* bdev);
 
@@ -38,9 +47,7 @@ int sfs_unlink(sfs_unit* fs, const char* filepath);
 
 int sfs_rename(sfs_unit* fs, const char* oldpath, const char* newpath);
 
-time_t sfs_gettime(sfs_unit* fs, const char* filepath);
-
-size_t sfs_getsize(sfs_unit* fs, const char* filepath);
+int sfs_getattr(sfs_unit* fs, const char* filepath, sfs_attr* attr);
 
 int sfs_mkdir(sfs_unit* fs, const char* dirpath);
 
