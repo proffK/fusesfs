@@ -16,6 +16,8 @@ typedef struct {
         char* filename;
         size_t len;
         off_t cur_off;
+        size_t size;
+        uint64_t time;
         flag_t type;
 } diriter;
 

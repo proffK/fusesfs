@@ -54,6 +54,8 @@ RESTART:
         }
 
         if (entr.entry_type == FILE_ENTRY) {
+                iter->size = ((file_entry*) &entr)->size;
+                iter->time = ((file_entry*) &entr)->time_stamp;
                 if (read_file_name(fs, (file_entry*) &entr, 
                                    off, name, len) == -1)
                         return -1;
@@ -72,6 +74,8 @@ RESTART:
         }
 
         if (entr.entry_type == DIR_ENTRY) {
+                iter->size = 0;
+                iter->time = ((dir_entry*) &entr)->time_stamp;
                 if (read_dir_name(fs, (dir_entry*) &entr, 
                                    off, name, len) == -1)
                         return -1;
