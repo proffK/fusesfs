@@ -5,6 +5,9 @@
 #include <sfs/debug.h>
 #include <sfs/callback.h>
 
+#define STRCMPN(str1, str2, num) (strnlen(str1, num) == strnlen(str2, num) \
+                                 && strncmp(str1, str2, num) == 0)
+
 static int check_file_mask(sfs_unit* fs, entry* entr, 
                            off_t entry_off, void* data)
 {
@@ -87,6 +90,7 @@ static int read_dir_entry(sfs_unit* fs, entry* entr,
 {
         if (entr->entry_type != DIR_ENTRY) return 0;
 
+        SFS_TRACE("!!!!!!!!!!!!!!!!!!!!!!!!!SEARCH DIR %s\n", (char*)data);
         if (strnlen((char*) ((dir_entry*) entr)->dir_name, FIRST_DIR_NAME_SIZE) 
             == strnlen(data, FIRST_DIR_NAME_SIZE) &&
                 strncmp(data, (char*) ((dir_entry*) entr)->dir_name, 
@@ -131,7 +135,7 @@ off_t search_file(sfs_unit* fs, char* filepath, entry* entr)
                         SET_ERRNO(EIO);
                         return 0;
                 }
-                if (strncmp((char*) entr, filepath, INDEX_ENTRY_SIZE) != 0) {
+                if (!(STRCMPN((char*) entr, filepath, INDEX_ENTRY_SIZE))) {
                         SFS_TRACE("Didn't found file %s", filepath);
                         return 0;
                 }
@@ -139,7 +143,7 @@ off_t search_file(sfs_unit* fs, char* filepath, entry* entr)
                 filepath += INDEX_ENTRY_SIZE;
                 cur_off += INDEX_ENTRY_SIZE;
         }
-
+        read_entry(fs->bdev, start_off, entr);
         return start_off;
 }
 
@@ -182,12 +186,13 @@ off_t search_file_mask(sfs_unit* fs, char* filepath,
 
 off_t search_dir(sfs_unit* fs, char* filepath, entry* entr)
 {
+        //TODO: REWRITE!!!
         off_t start_off = 0;
         off_t cur_off = 0;
         uint8_t n = 0;
 
         SET_ERRNO(0);
-
+        SFS_TRACE("^^^^^^^^^^^^^^^^SEARCH DIR %s\n", filepath);
         if (!(fs && filepath && entr)) {
                 SET_ERRNO(EFAULT);
                 return 0;
@@ -213,8 +218,8 @@ off_t search_dir(sfs_unit* fs, char* filepath, entry* entr)
                         SET_ERRNO(EIO);
                         return 0;
                 }
-                if (strncmp((char*) entr, filepath, INDEX_ENTRY_SIZE) != 0) {
-                        SFS_TRACE("Didn't found directory %s", filepath);
+                if (!(STRCMPN((char*) entr, filepath, INDEX_ENTRY_SIZE))) {
+                        SFS_TRACE("Didn't found directory %s %s", filepath, (char*)entr);
                         return 0;
                 }
 
@@ -222,6 +227,7 @@ off_t search_dir(sfs_unit* fs, char* filepath, entry* entr)
                 cur_off += INDEX_ENTRY_SIZE;
         }
 
+        read_entry(fs->bdev, start_off, entr);
         return start_off;
 }
 
