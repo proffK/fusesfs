@@ -25,6 +25,7 @@ int sfs_getattr(sfs_unit* fs, const char* filepath, sfs_attr* attr)
                 return -1;
         }
         if (entr.entry_type == FILE_ENTRY) {
+                SFS_TRACE("******FILE_ENTRY");
                 attr->type = FILE_ITER_TYPE;
                 attr->time = ((file_entry*) &entr)->time_stamp;
                 attr->size = ((file_entry*) &entr)->size;

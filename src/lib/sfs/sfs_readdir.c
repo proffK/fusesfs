@@ -66,7 +66,7 @@ RESTART:
                 name += (start_len + add);
                 if (is_leaf(name) == 0) {
                         off += INDEX_ENTRY_SIZE;
-                        name -= (start_len + 1);
+                        name -= (start_len + add);
                         goto RESTART;
                 }
                 name -= (start_len + add);
