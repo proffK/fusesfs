@@ -126,16 +126,28 @@ int is_correct_label(const char* string)
         return 0;
 }
 
-uint8_t calc_checksum(struct mbr_t* mbr_section)
+uint8_t calc_checksum(uint8_t* mag_num, uint8_t* sfs_v, uint64_t* tot_size, 
+                      uint32_t* res_size, uint8_t* b_size)
 {
-        uint8_t buffer = 0;
-        uint64_t counter = 0;
-        uint64_t end = 0;
-        counter = (uint64_t)mbr_section->magic_number;
-        end = (uint64_t)mbr_section->checksum;
-        for (; counter < end; counter++) 
-                buffer += *(uint8_t*)counter;
-        return buffer;        
+        uint8_t counter = 0;
+        counter += mag_num[0] + mag_num[1] + mag_num[2];
+        counter += *sfs_v;
+        counter = counter +
+                  (uint8_t)(((*tot_size) & 0xFF00000000000000)>>56) + 
+                  (uint8_t)(((*tot_size) & 0x00FF000000000000)>>48) +
+                  (uint8_t)(((*tot_size) & 0x0000FF0000000000)>>40) +
+                  (uint8_t)(((*tot_size) & 0x000000FF00000000)>>32) +
+                  (uint8_t)(((*tot_size) & 0x00000000FF000000)>>24) +
+                  (uint8_t)(((*tot_size) & 0x0000000000FF0000)>>16) +
+                  (uint8_t)(((*tot_size) & 0x000000000000FF00)>>8)  +
+                  (uint8_t)((*tot_size) & 0x00000000000000FF);
+        counter = counter +
+                  (uint8_t)(((*res_size) & 0xFF000000)) +
+                  (uint8_t)(((*res_size) & 0x00FF0000)) +
+                  (uint8_t)(((*res_size) & 0x0000FF00)) +
+                  (uint8_t)((*res_size) & 0x000000FF);
+        counter += *b_size;
+        return counter;        
 }
 
 int strcmp(const char* s1, const char* s2)

@@ -111,6 +111,8 @@ static void* fuse_sfs_init()
         uint8_t bs_p2 = 0;
         uint64_t bs = 0;
         uint64_t file_size = 0;
+        struct stat dstat;
+        int err = 0;
         blockdev* bdev = malloc(sizeof(blockdev));
         filedev_data* fdev = malloc(sizeof(filedev_data));
         sfs_description = malloc(sizeof(sfs_unit));
@@ -118,13 +120,18 @@ static void* fuse_sfs_init()
          * Try to recognize block_size
          */
         int temp_fd = open(imagefile, O_RDONLY);
+        fstat(temp_fd, &dstat); 
         lseek(temp_fd, offsetof(struct mbr_t, block_size), SEEK_SET);
-        if (read(temp_fd, &bs_p2, 1) == 0)
-                return NULL;
+        if (read(temp_fd, &bs_p2, 1) == 0) {
+                close(temp_fd);
+                exit(EXIT_FAILURE);
+        }
         bs = 128 << bs_p2;
         lseek(temp_fd, offsetof(struct mbr_t, total_size), SEEK_SET);
-        if (read(temp_fd, &file_size, 1) == 0)
-                return NULL;
+        if (read(temp_fd, &file_size, 1) == 0) {
+                close(temp_fd);
+                exit(EXIT_FAILURE);
+        }
         close(temp_fd);
         SFS_TRACE("BS: %lu, FS: %lu", bs, file_size);
         /*
@@ -134,9 +141,12 @@ static void* fuse_sfs_init()
         bdev = filedev_create(bdev, fdev, bs, file_size * bs);
         fdev->filename = imagefile;
         if (blockdev_init(bdev) != 0)
-                return NULL;
-        if (sfs_init(sfs_description, bdev) != 0)
-                return NULL;
+                exit(EXIT_FAILURE);
+        if ((err = sfs_init(sfs_description, bdev, dstat.st_mtime)) < 0)
+                exit(EXIT_FAILURE);
+        if (err == 1)
+                fprintf(stderr, "Modification time and timestamp are differ\n"
+                                "WE DON'T GIVE ANY WARRANTY!\n");
         SFS_TRACE("Init finished");
         return NULL;
 }
@@ -303,7 +313,12 @@ static int fuse_sfs_mknod(const char* path, mode_t mode, dev_t rdev)
                 return -ENOTSUP;
         path++;
         char* cpath = new_path(path);
-        if (sfs_creat(sfs_description, cpath) == -1) {
+
+        if (mode & S_IFREG && sfs_creat(sfs_description, cpath) == -1) {
+                free(cpath);
+                return -ENOMEM;
+        }
+        if (mode & S_IFDIR && sfs_creat(sfs_description, cpath) == -1) {
                 free(cpath);
                 return -ENOMEM;
         }
