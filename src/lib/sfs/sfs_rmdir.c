@@ -16,7 +16,7 @@ int sfs_rmdir(sfs_unit* fs, const char* dirpath)
         off_t off = fs->entry_start;
         off_t start = 0;
         uint8_t n = 0;
-        diriter iter;
+        //diriter iter;
 
         if (is_correct_filepath(dirpath) != 0) {
                 SFS_TRACE("Incorrect dirname %s", dirpath);

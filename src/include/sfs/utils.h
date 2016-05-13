@@ -44,7 +44,8 @@ int is_correct_dirpath(const char* string);
 
 int is_correct_label(const char* string);
 
-uint8_t calc_checksum(struct mbr_t* mbr_section);        
+uint8_t calc_checksum(uint8_t* mag_num, uint8_t* sfs_v, uint64_t* tot_size, 
+                      uint32_t* res_size, uint8_t* b_size);
 
 #ifdef SFS_ERRNO
 extern int sfs_errno;

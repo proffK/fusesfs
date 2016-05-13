@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <limits.h>
 #include <getopt.h>
 #define FUSE_USE_VERSION 22
 #include <fuse.h>
@@ -11,13 +13,11 @@
 #include <fcntl.h>
 #include <sys/sem.h>
 #include <sys/stat.h>
-#include <sys/syscall.h>
 #include <sfs/unit.h>
 #include <sfs/debug.h>
 #include <bdev/filedev.h>
 #include <sfs/mbr.h>
 
-#define gettid() (int)syscall(SYS_gettid)
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 /* +++++++++++++++++++++++++++++ Semaphores ++++++++++++++++++++++++++++++++ */
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
@@ -91,16 +91,28 @@ static int try_to_lock_image(char* path)
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 /* +++++++++++++++++++++++++++++ End of functions ++++++++++++++++++++++++++ */
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
-
+static inline char* new_path(const char* path) 
+{
+        char* cpath = (char*) calloc(PATH_MAX, sizeof(char));
+        if (cpath == NULL) {
+                perror("");
+                return NULL;
+        }
+        strncpy(cpath, path, PATH_MAX - 1);
+        cpath[PATH_MAX - 1] = '\0';
+        return cpath;
+}
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 /* +++++++++++++++++++++++++ FUSE OPERATION STRUCTURE ++++++++++++++++++++++ */
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 static void* fuse_sfs_init()
 {
-        SFS_TRACE("%d", gettid());
+        SFS_TRACE("INIT");
         uint8_t bs_p2 = 0;
         uint64_t bs = 0;
         uint64_t file_size = 0;
+        struct stat dstat;
+        int err = 0;
         blockdev* bdev = malloc(sizeof(blockdev));
         filedev_data* fdev = malloc(sizeof(filedev_data));
         sfs_description = malloc(sizeof(sfs_unit));
@@ -108,13 +120,18 @@ static void* fuse_sfs_init()
          * Try to recognize block_size
          */
         int temp_fd = open(imagefile, O_RDONLY);
+        fstat(temp_fd, &dstat); 
         lseek(temp_fd, offsetof(struct mbr_t, block_size), SEEK_SET);
-        if (read(temp_fd, &bs_p2, 1) == 0)
-                return NULL;
+        if (read(temp_fd, &bs_p2, 1) == 0) {
+                close(temp_fd);
+                exit(EXIT_FAILURE);
+        }
         bs = 128 << bs_p2;
         lseek(temp_fd, offsetof(struct mbr_t, total_size), SEEK_SET);
-        if (read(temp_fd, &file_size, 1) == 0)
-                return NULL;
+        if (read(temp_fd, &file_size, 1) == 0) {
+                close(temp_fd);
+                exit(EXIT_FAILURE);
+        }
         close(temp_fd);
         SFS_TRACE("BS: %lu, FS: %lu", bs, file_size);
         /*
@@ -124,9 +141,12 @@ static void* fuse_sfs_init()
         bdev = filedev_create(bdev, fdev, bs, file_size * bs);
         fdev->filename = imagefile;
         if (blockdev_init(bdev) != 0)
-                return NULL;
-        if (sfs_init(sfs_description, bdev) != 0)
-                return NULL;
+                exit(EXIT_FAILURE);
+        if ((err = sfs_init(sfs_description, bdev, dstat.st_mtime)) < 0)
+                exit(EXIT_FAILURE);
+        if (err == 1)
+                fprintf(stderr, "Modification time and timestamp are differ\n"
+                                "WE DON'T GIVE ANY WARRANTY!\n");
         SFS_TRACE("Init finished");
         return NULL;
 }
@@ -144,66 +164,133 @@ static void fuse_sfs_destroy(void* param)
 
 static int fuse_sfs_getattr(const char* path, struct stat *stbuf) 
 {
-        SFS_TRACE("%s", "");
-        return -1;
+        SFS_TRACE("GETATTR path %s", path);
+        path++;
+        char* cpath = new_path(path);
+        sfs_attr attr;
+        if (sfs_getattr(sfs_description, path, &attr) != 0)
+                return -ENOENT;
+        stbuf->st_dev  = getpid();
+        stbuf->st_ino  = attr.off;
+        stbuf->st_size = attr.size;
+        stbuf->st_mtime = attr.time;
+        if (attr.type == FILE_ITER_TYPE)
+                stbuf->st_mode = S_IFREG;
+        if (attr.type == DIR_ITER_TYPE)
+                stbuf->st_mode = S_IFDIR;
+        free(cpath);
+        return 0;
 }
 
 static int fuse_sfs_open(const char* path, struct fuse_file_info* fi)
 {
-        SFS_TRACE("%s", "");
+        SFS_TRACE("OPEN path %s", path);
         return -1;
 }
-
-/*static int fuse_sfs_create(const char* path, mode_t mode, 
-                           struct fuse_file_info* fi)
-{
-        return 0;
-}*/
 
 static int fuse_sfs_flush(const char *path, struct fuse_file_info* fi)
 {
-        SFS_TRACE("%s", "");
+        SFS_TRACE("FLUSH path %s", path);
         return 0;
-}
-
-static int fuse_sfs_opendir(const char* path, struct fuse_file_info* fi)
-{       
-        SFS_TRACE("%d", gettid());
-        return -1;
 }
 
 static int fuse_sfs_readdir(const char* path, void* buf, 
                             fuse_fill_dir_t filler, off_t offset,
                             struct fuse_file_info* fi)
 {
-        SFS_TRACE("%d", gettid());
-        return -1;
+        SFS_TRACE("READDIR path %s", path);
+        (void) offset;
+        (void) fi;
+        diriter iter;
+
+        path++;
+        char* cpath = new_path(path);
+
+        int a = 1;
+        int len = strlen(cpath);
+        if (len == 0)
+                a = 0;
+        (void) a;
+        iter.filename = cpath;
+        iter.len = PATH_MAX;
+        iter.cur_off = 0;
+
+        while (iter.filename != NULL) {
+                struct stat st_buf;
+                memset(&st_buf, 0, sizeof(struct stat));
+                if (sfs_readdir(sfs_description, &iter) != 0) {
+                        //fprintf(stderr, "READDIR ERROR!!!!@@@@@@@@@@@@@@\n");
+                        free(cpath);
+                        return -1; 
+                }
+                if (iter.filename == NULL)
+                        break;
+                st_buf.st_dev = getpid();
+                st_buf.st_ino = iter.cur_off;
+                if (iter.type == FILE_ITER_TYPE)
+                        st_buf.st_mode = S_IFREG;
+                if (iter.type == DIR_ITER_TYPE)
+                        st_buf.st_mode = S_IFDIR;
+                st_buf.st_size = iter.size;
+                st_buf.st_mtime = iter.time;
+                //fprintf(stderr, "@@@@@@FILLER FILENAME %s len %d a %d\n", iter.filename + len + a, len, a);
+                if (filler(buf, iter.filename + len + a, &st_buf, 0)) {
+                        //fprintf(stderr, "I AM FILOSOPHER###############\n");
+                        break;
+                }
+                iter.filename[len] = '\0';
+        }
+        free(cpath);
+        return 0;
 }
 
 static int fuse_sfs_mkdir(const char* path, mode_t mode)
 {
         SFS_TRACE("%s", "");
-        return -1;
+        path++;
+        char* cpath = new_path(path);
+        if (sfs_mkdir(sfs_description, cpath) == -1) {
+                free(cpath);
+                return -EEXIST;
+        }
+        free(cpath);
+        return 0;
 }
 
 static int fuse_sfs_unlink(const char* path)
 {
-        SFS_TRACE("%s", "");
+        SFS_TRACE("UNLINK path%s", path);
+        path++;
+        char* cpath = new_path(path);
+        if (sfs_unlink(sfs_description, cpath) == -1) {
+                free(cpath);
+                return -ENOENT;
+        }
+        free(cpath);
         return 0;
 }
 
 static int fuse_sfs_rmdir(const char* path)
 {
         SFS_TRACE("%s", "");
+        path++;
+        char* cpath = new_path(path);
+        if (sfs_rmdir(sfs_description, cpath) == -1) {
+                free(cpath);
+                return -1;
+        }
+        free(cpath);
         return 0;
 }
 
+//TODO
 static int fuse_sfs_rename(const char* from, const char* to)
 {
         SFS_TRACE("%s", "");
         return 0;
 }
 
+//TODO
 static int fuse_sfs_read(const char* path, char *buf, size_t size, 
                          off_t offset, struct fuse_file_info* fi)
 {
@@ -211,6 +298,7 @@ static int fuse_sfs_read(const char* path, char *buf, size_t size,
         return 0;
 }
 
+//TODO
 static int fuse_sfs_write(const char* path, const char *buf, size_t size, 
                           off_t offset, struct fuse_file_info* fi)
 {
@@ -218,18 +306,54 @@ static int fuse_sfs_write(const char* path, const char *buf, size_t size,
         return -1;
 }
 
+static int fuse_sfs_mknod(const char* path, mode_t mode, dev_t rdev) 
+{
+        SFS_TRACE("MKNOOOOOOD path %s", path);
+        if (!(mode & S_IFREG))
+                return -ENOTSUP;
+        path++;
+        char* cpath = new_path(path);
+
+        if (mode & S_IFREG && sfs_creat(sfs_description, cpath) == -1) {
+                free(cpath);
+                return -ENOMEM;
+        }
+        if (mode & S_IFDIR && sfs_creat(sfs_description, cpath) == -1) {
+                free(cpath);
+                return -ENOMEM;
+        }
+        free(cpath);
+        return 0;
+}
+
+static int fuse_sfs_chmod(const char* path, mode_t mode)
+{
+        return 0;
+}
+
+static int fuse_sfs_chown(const char* path, uid_t uid, gid_t gid)
+{
+        return 0;
+}
+
+static int fuse_sfs_utime(const char* path, struct utimbuf* buf)
+{
+        return 0;
+}
+
 static struct fuse_operations sfs_oper = {
         .init           = fuse_sfs_init,   
         .destroy        = fuse_sfs_destroy,
-        //.getattr        = fuse_sfs_getattr,
-        //.open           = fuse_sfs_open,   
-        /*.create         = fuse_sfs_create, */
-        //.flush          = fuse_sfs_flush,   
-        //.opendir        = fuse_sfs_opendir,
-        //.readdir        = fuse_sfs_readdir,
-        //.mkdir          = fuse_sfs_mkdir,  
-        //.unlink         = fuse_sfs_unlink, 
-        //.rmdir          = fuse_sfs_rmdir,  
+        .getattr        = fuse_sfs_getattr,
+        .flush          = fuse_sfs_flush,   
+        .readdir        = fuse_sfs_readdir,
+        .mkdir          = fuse_sfs_mkdir,
+        .unlink         = fuse_sfs_unlink, 
+        .rmdir          = fuse_sfs_rmdir,
+        .mknod          = fuse_sfs_mknod,
+        .chmod          = fuse_sfs_chmod,
+        .chown          = fuse_sfs_chown,
+        .utime          = fuse_sfs_utime
         //.rename         = fuse_sfs_rename, 
         //.read           = fuse_sfs_read,
         //.write          = fuse_sfs_write,

@@ -16,12 +16,15 @@ typedef struct {
         char* filename;
         size_t len;
         off_t cur_off;
+        size_t size;
+        uint64_t time;
         flag_t type;
 } diriter;
 
 typedef struct {
         uint64_t time;
         size_t size;
+        off_t off;
         flag_t type;
 } sfs_attr;
 
@@ -35,11 +38,12 @@ static inline void update(sfs_unit* fs)
         fs->time = get_time();
 }
 
-int sfs_init(sfs_unit* fs, blockdev* bdev);
+int sfs_init(sfs_unit* fs, blockdev* bdev, time_t last_w_time);
 
 int sfs_release(sfs_unit* fs);
 
-ssize_t sfs_read(sfs_unit* fs, const char* filepath, uint8_t* data, size_t size);
+ssize_t sfs_read(sfs_unit* fs, const char* filepath, uint8_t* data, 
+                 size_t size);
 
 int sfs_creat(sfs_unit* fs, const char* filepath);
 
@@ -55,5 +59,6 @@ int sfs_rmdir(sfs_unit* fs, const char* dirpath);
 
 int sfs_readdir(sfs_unit* fs, diriter* iter);
 
-ssize_t sfs_write(sfs_unit* fs, const char* filepath, uint8_t* data, size_t size);
+ssize_t sfs_write(sfs_unit* fs, const char* filepath, uint8_t* data, 
+                  size_t size);
 #endif
