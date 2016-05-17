@@ -6,7 +6,7 @@
 #include <sfs/io.h>
 #include <sfs/entry.h>
 
-int sfs_init(sfs_unit* fs, blockdev* bdev, time_t last_w_time)
+int sfs_init(sfs_unit* fs, blockdev* bdev)
 {
         // TODO: check checksum
         // TODO: release list with deleted file
@@ -88,9 +88,9 @@ int sfs_init(sfs_unit* fs, blockdev* bdev, time_t last_w_time)
                             fs->entry_start, (uint8_t*)&(fs->time), 
                             sizeof(fs->time)) == -1)
                 return -1;
-        SFS_TRACE("YO l%lu ft%lu", last_w_time, fs->time);
-        if (last_w_time - fs->time > 1)
-                return 1;
+//        SFS_TRACE("YO l%lu ft%lu", last_w_time, fs->time);
+//        if (last_w_time - fs->time > 1)
+//                return 1;
         /* Write zero to time stamp */
         if (write_data(bdev, offsetof(vol_ident_entry, time_stamp) + 
                              fs->entry_start, (uint8_t*)&(new_timestamp), 

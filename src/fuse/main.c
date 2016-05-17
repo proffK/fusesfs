@@ -142,7 +142,7 @@ static void* fuse_sfs_init()
         fdev->filename = imagefile;
         if (blockdev_init(bdev) != 0)
                 exit(EXIT_FAILURE);
-        if ((err = sfs_init(sfs_description, bdev, dstat.st_mtime)) < 0)
+        if ((err = sfs_init(sfs_description, bdev)) < 0)
                 exit(EXIT_FAILURE);
         if (err == 1)
                 fprintf(stderr, "Modification time and timestamp are differ\n"

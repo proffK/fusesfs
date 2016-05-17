@@ -12,4 +12,6 @@ size_t write_data(blockdev* dev, off_t offset, uint8_t* data, size_t size);
 size_t read_entry(blockdev* dev, off_t offset, entry* entry);
 
 size_t write_entry(blockdev* dev, off_t offset, entry* entry);
+
+int copy_block(blockdev* dev, off_t src, off_t dest, size_t size); 
 #endif

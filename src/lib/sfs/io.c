@@ -162,3 +162,26 @@ size_t write_entry(blockdev* dev, off_t offset, entry* entry)
         return write_data(dev, offset, (uint8_t*)entry, INDEX_ENTRY_SIZE);
 }
 
+int copy_block(blockdev* dev, off_t src, off_t dest, size_t size) 
+{
+        buf_t* buf = dev->buf;
+        size_t bsize = dev->block_size;
+        IO_TRACE("Copy blocks:\n"
+                 "from %lu to %lu. size: %lu", src, dest, size);
+
+        while (size > 0) {
+                if (dev->read(dev, buf, bsize, src) == -1) {
+                        IO_TRACE("Reading failed\n");
+                        return -1;
+                }
+                if (dev->write(dev, buf, bsize, dest) == -1) {
+                        IO_TRACE("Writing failed\n");
+                        return -1;
+                }
+                src++;
+                dest++;
+                size--;
+        }
+
+        return 0;
+}

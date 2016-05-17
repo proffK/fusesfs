@@ -38,12 +38,11 @@ static inline void update(sfs_unit* fs)
         fs->time = get_time();
 }
 
-int sfs_init(sfs_unit* fs, blockdev* bdev, time_t last_w_time);
+int sfs_init(sfs_unit* fs, blockdev* bdev);
 
 int sfs_release(sfs_unit* fs);
 
-ssize_t sfs_read(sfs_unit* fs, const char* filepath, uint8_t* data, 
-                 size_t size);
+ssize_t sfs_read(sfs_unit* fs, const char* filepath, uint8_t* data, size_t size, off_t off);
 
 int sfs_creat(sfs_unit* fs, const char* filepath);
 
@@ -59,6 +58,6 @@ int sfs_rmdir(sfs_unit* fs, const char* dirpath);
 
 int sfs_readdir(sfs_unit* fs, diriter* iter);
 
-ssize_t sfs_write(sfs_unit* fs, const char* filepath, uint8_t* data, 
-                  size_t size);
+ssize_t sfs_write(sfs_unit* fs, const char* filepath, 
+                  uint8_t* data, size_t size, off_t off);
 #endif

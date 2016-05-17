@@ -37,7 +37,8 @@ static int search_del_space(sfs_unit* fs, entry* entr,
                 return 0;
 
         if (((del_file_entry*) entr)->end_block -
-            ((del_file_entry*) entr)->start_block >= *((size_t*) bsize))
+            ((del_file_entry*) entr)->start_block + 1 
+              >= *((size_t*) bsize))
                 return 1;
 
         return 0;
