@@ -89,7 +89,7 @@ int free_entry(sfs_unit* fs, entry* entr, off_t entr_off, int n)
 off_t alloc_space(sfs_unit* fs, size_t size, entry* entr)
 {
         size_t block_size = fs->bdev->block_size;
-        size_t bsize = block_size * ((size / block_size) +
+        size_t bsize = ((size / block_size) +
                         !!(size % block_size));
         off_t ret = 0;
 
