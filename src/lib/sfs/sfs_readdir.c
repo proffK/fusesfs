@@ -94,6 +94,12 @@ RESTART:
         }
         iter->cur_off = off + INDEX_ENTRY_SIZE;
 
+        if (is_correct_filepath(name) != 0) {
+                SFS_TRACE("Incorrect name of file was found: %s", name);
+                off += INDEX_ENTRY_SIZE;
+                goto RESTART;
+        }
+        
         SFS_TRACE("searched file mask %s", name);
         return 0;
 }
