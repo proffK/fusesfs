@@ -8,7 +8,6 @@
 
 int sfs_init(sfs_unit* fs, blockdev* bdev)
 {
-        // TODO: check checksum
         // TODO: release list with deleted file
         // TODO: check timestamp
         uint64_t data_area_size = 0;
@@ -27,6 +26,7 @@ int sfs_init(sfs_unit* fs, blockdev* bdev)
         if (read_data(bdev, offsetof(struct mbr_t, data_area_size), 
                   (uint8_t*)(&data_area_size), sizeof(data_area_size)) == -1)
                 return -1;
+        SFS_TRACE("#################CHECKSUM");
         /* Read index area size */
         if (read_data(bdev, offsetof(struct mbr_t, index_area_size), 
                   (uint8_t*)(&index_area_size), sizeof(index_area_size)) == -1)
@@ -88,9 +88,6 @@ int sfs_init(sfs_unit* fs, blockdev* bdev)
                             fs->entry_start, (uint8_t*)&(fs->time), 
                             sizeof(fs->time)) == -1)
                 return -1;
-//        SFS_TRACE("YO l%lu ft%lu", last_w_time, fs->time);
-//        if (last_w_time - fs->time > 1)
-//                return 1;
         /* Write zero to time stamp */
         if (write_data(bdev, offsetof(vol_ident_entry, time_stamp) + 
                              fs->entry_start, (uint8_t*)&(new_timestamp), 

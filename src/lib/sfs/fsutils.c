@@ -252,7 +252,7 @@ off_t search_file_mask(sfs_unit* fs, char* filepath,
 
         while (entr_off != fs->vol_ident) {
                 read_entry(fs->bdev, entr_off, entr);
-                SFS_TRACE("Reading entry %lu", entr_off);
+                //SFS_TRACE("Reading entry %lu", entr_off);
                 if (entr->entry_type == FILE_ENTRY) {
                         if (check_file_mask(fs, entr, 
                                             entr_off, filepath) != 0) {

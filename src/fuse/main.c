@@ -13,11 +13,19 @@
 #include <fcntl.h>
 #include <sys/sem.h>
 #include <sys/stat.h>
+#include <sys/file.h>
+
 #include <sfs/unit.h>
 #include <sfs/debug.h>
 #include <bdev/filedev.h>
 #include <sfs/mbr.h>
 
+enum err_code {
+        SFS_INVAL = 1,
+        SFS_ENOMEM
+};
+
+extern int sfs_errno;
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 /* +++++++++++++++++++++++++++++ Semaphores ++++++++++++++++++++++++++++++++ */
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
@@ -112,7 +120,6 @@ static void* fuse_sfs_init()
         uint64_t bs = 0;
         uint64_t file_size = 0;
         struct stat dstat;
-        int err = 0;
         blockdev* bdev = malloc(sizeof(blockdev));
         filedev_data* fdev = malloc(sizeof(filedev_data));
         sfs_description = malloc(sizeof(sfs_unit));
@@ -128,7 +135,7 @@ static void* fuse_sfs_init()
         }
         bs = 128 << bs_p2;
         lseek(temp_fd, offsetof(struct mbr_t, total_size), SEEK_SET);
-        if (read(temp_fd, &file_size, 1) == 0) {
+        if (read(temp_fd, &file_size, 8) == 0) {
                 close(temp_fd);
                 exit(EXIT_FAILURE);
         }
@@ -142,11 +149,15 @@ static void* fuse_sfs_init()
         fdev->filename = imagefile;
         if (blockdev_init(bdev) != 0)
                 exit(EXIT_FAILURE);
-        if ((err = sfs_init(sfs_description, bdev)) < 0)
+
+        if (sfs_init(sfs_description, bdev) < 0)
                 exit(EXIT_FAILURE);
-        if (err == 1)
+        if (dstat.st_mtime - sfs_description->time <= 1)
                 fprintf(stderr, "Modification time and timestamp are differ\n"
                                 "WE DON'T GIVE ANY WARRANTY!\n");
+        else
+                fprintf(stderr, "Modification time and timestamp "
+                                "are equal\n");
         SFS_TRACE("Init finished");
         return NULL;
 }
@@ -178,6 +189,8 @@ static int fuse_sfs_getattr(const char* path, struct stat *stbuf)
                 stbuf->st_mode = S_IFREG;
         if (attr.type == DIR_ITER_TYPE)
                 stbuf->st_mode = S_IFDIR;
+        stbuf->st_mode |= S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP |
+                          S_IROTH;
         free(cpath);
         return 0;
 }
@@ -219,7 +232,6 @@ static int fuse_sfs_readdir(const char* path, void* buf,
                 struct stat st_buf;
                 memset(&st_buf, 0, sizeof(struct stat));
                 if (sfs_readdir(sfs_description, &iter) != 0) {
-                        //fprintf(stderr, "READDIR ERROR!!!!@@@@@@@@@@@@@@\n");
                         free(cpath);
                         return -1; 
                 }
@@ -233,9 +245,7 @@ static int fuse_sfs_readdir(const char* path, void* buf,
                         st_buf.st_mode = S_IFDIR;
                 st_buf.st_size = iter.size;
                 st_buf.st_mtime = iter.time;
-                //fprintf(stderr, "@@@@@@FILLER FILENAME %s len %d a %d\n", iter.filename + len + a, len, a);
                 if (filler(buf, iter.filename + len + a, &st_buf, 0)) {
-                        //fprintf(stderr, "I AM FILOSOPHER###############\n");
                         break;
                 }
                 iter.filename[len] = '\0';
@@ -295,15 +305,28 @@ static int fuse_sfs_read(const char* path, char *buf, size_t size,
                          off_t offset, struct fuse_file_info* fi)
 {
         SFS_TRACE("%s", "");
-        return 0;
+        path++;
+        char* cpath = new_path(path);
+        int num_byte = 0;
+        num_byte = sfs_read(sfs_description, cpath, buf, size, offset);
+        free(cpath);
+        return num_byte;
 }
 
-//TODO
 static int fuse_sfs_write(const char* path, const char *buf, size_t size, 
                           off_t offset, struct fuse_file_info* fi)
 {
         SFS_TRACE("%s", "");
-        return -1;
+        fprintf(stderr, "PATH %s SIZE: %lu OFFSET: %lu", path, size, offset);
+        path++;
+        char* cpath = new_path(path);
+        int num_byte = 0;
+        num_byte = sfs_write(sfs_description, (const char*)cpath, 
+                             (char*)buf, size, offset);
+        free(cpath);
+        if (num_byte == -1 && sfs_errno == SFS_ENOMEM)
+                return -ENOSPC;
+        return num_byte;
 }
 
 static int fuse_sfs_mknod(const char* path, mode_t mode, dev_t rdev) 
@@ -341,6 +364,12 @@ static int fuse_sfs_utime(const char* path, struct utimbuf* buf)
         return 0;
 }
 
+static int fuse_sfs_truncate(const char* path, off_t offset) {
+        /* Function is not implemented */
+        /* but FUSE require this function... */
+        return 0;
+}
+
 static struct fuse_operations sfs_oper = {
         .init           = fuse_sfs_init,   
         .destroy        = fuse_sfs_destroy,
@@ -353,10 +382,11 @@ static struct fuse_operations sfs_oper = {
         .mknod          = fuse_sfs_mknod,
         .chmod          = fuse_sfs_chmod,
         .chown          = fuse_sfs_chown,
-        .utime          = fuse_sfs_utime
+        .utime          = fuse_sfs_utime,
         //.rename         = fuse_sfs_rename, 
-        //.read           = fuse_sfs_read,
-        //.write          = fuse_sfs_write,
+        .read           = fuse_sfs_read,
+        .write          = fuse_sfs_write,
+        .truncate       = fuse_sfs_truncate
 };
 
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */

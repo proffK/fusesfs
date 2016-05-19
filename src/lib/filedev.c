@@ -76,14 +76,12 @@ static size_t filedev_read(blockdev* bdev, buf_t* buf,
                 errno = EINVAL;
                 return -1;
         }
-
         if (buf_size % bdev->block_size) {
                 errno = EINVAL;
                 return -1;
         }
 
         start_pos = block_num * bdev->block_size;
-
         if (start_pos + buf_size > bdev->size) {
                 errno = EINVAL;
                 return -1;
