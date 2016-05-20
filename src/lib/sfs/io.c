@@ -21,6 +21,7 @@ size_t read_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
         if (dev->buf_num != bnum) {
                 IO_TRACE("Read block: %lu\n", bnum);
                 if (dev->read(dev, buf, bsize, bnum) == -1) {
+                        SET_ERRNO(EIO);
                         IO_TRACE("Reading failed\n");
                         return -1;
                 }
@@ -41,6 +42,7 @@ size_t read_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
         while (size >= bsize) {
                 IO_TRACE("Read block: %lu\n", bnum);
                 if (dev->read(dev, buf, bsize, bnum) == -1) {
+                        SET_ERRNO(EIO);
                         IO_TRACE("Reading failed\n");
                         return -1;
                 }
@@ -55,6 +57,7 @@ size_t read_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
         dev->buf_num = bnum;
         IO_TRACE("Read block: %lu", bnum);
         if (dev->read(dev, buf, bsize, bnum) == -1) {
+                SET_ERRNO(EIO);
                 IO_TRACE("Reading failed\n");
                 return -1;
         }
@@ -78,6 +81,7 @@ size_t write_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
 
         IO_TRACE("Read block: %lu", bnum);
         if (dev->read(dev, buf, bsize, bnum) == -1) {
+                SET_ERRNO(EIO);
                 IO_TRACE("Reading failed\n");
                 return -1;
         }
@@ -87,6 +91,7 @@ size_t write_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
                 memcpy(buf + cur_pos, data, size);
                 IO_TRACE("Write block: %lu", bnum);
                 if (dev->write(dev, buf, bsize, bnum) == -1) {
+                        SET_ERRNO(EIO);
                         IO_TRACE("Writing failed\n");   
                         return -1;
                 }
@@ -97,6 +102,7 @@ size_t write_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
         memcpy(buf + cur_pos, data, bsize - cur_pos);
         IO_TRACE("Write block: %lu", bnum);
         if (dev->write(dev, buf, bsize, bnum) == -1) {
+                SET_ERRNO(EIO);
                 IO_TRACE("Writing failed\n");   
                 return -1;
         }
@@ -108,6 +114,7 @@ size_t write_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
                 memcpy(buf, data, bsize);
                 IO_TRACE("Write block: %lu", bnum);
                 if (dev->write(dev, buf, bsize, bnum) == -1) {
+                        SET_ERRNO(EIO);
                         IO_TRACE("Writing failed\n");   
                         return -1;
                 }
@@ -122,6 +129,7 @@ size_t write_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
         dev->buf_num = bnum;
         IO_TRACE("Read block: %lu", bnum);
         if (dev->read(dev, buf, bsize, bnum) == -1) {
+                SET_ERRNO(EIO);
                 IO_TRACE("Reading failed\n");   
                 return -1;
         }
@@ -171,10 +179,12 @@ int copy_block(blockdev* dev, off_t src, off_t dest, size_t size)
 
         while (size > 0) {
                 if (dev->read(dev, buf, bsize, src) == -1) {
+                        SET_ERRNO(EIO);
                         IO_TRACE("Reading failed\n");
                         return -1;
                 }
                 if (dev->write(dev, buf, bsize, dest) == -1) {
+                        SET_ERRNO(EIO);
                         IO_TRACE("Writing failed\n");
                         return -1;
                 }

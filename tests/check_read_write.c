@@ -39,11 +39,13 @@ START_TEST(test_sfs_readdir)
         ck_assert(sfs_mkdir(&fs, "test*ile") == -1);
         ck_assert(sfs_mkdir(&fs, "testdir") == -1);
 
-        for (; i < 1032 ; i += 8) {
+        for (; i < 1024 ; i += 8) {
                 ck_assert(sfs_write(&fs, "testfile1", "aaaaaaa", 8, i) == 8);
-                ck_assert(sfs_write(&fs, "testfile2", "bbbbbbb", 8, i) == 8);
+//                ck_assert(sfs_write(&fs, "testfile2", "bbbbbbb", 8, i) == 8);
         }
-
+        ck_assert(sfs_write(&fs, "testfile1", "ccccccc", 8, i) == 8);
+        ck_assert(sfs_write(&fs, "testfile2", "ddddddd", 8, 0) == 8);
+ 
         bdev.release(&bdev);
         ck_assert(errno == 0);
 END_TEST

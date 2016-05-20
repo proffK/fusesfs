@@ -10,18 +10,11 @@
 #define AS_FILE(entr) ((file_entry*) (entr))
 #define AS_DFILE(entr) ((del_file_entry*) (entr))
 
-static inline size_t get_real_size(sfs_unit* fs, size_t size)
-{
-        return fs->bdev->block_size * ((size / fs->bdev->block_size) +
-                        !!(size % fs->bdev->block_size));
-}
-
 ssize_t sfs_write(sfs_unit* fs, const char* filepath, 
                   char* data, size_t size, off_t off)
 {
         entry entr;
         off_t start = 0;
-        off_t del_file = 0;
         size_t old_size = 0;
         size_t new_size = 0;
         off_t old_start = 0;
@@ -64,53 +57,32 @@ ssize_t sfs_write(sfs_unit* fs, const char* filepath,
         SFS_TRACE("New size %lu", new_size);
 
         if (get_real_size(fs, new_size) > get_real_size(fs, old_size)) {
-                off_t new_del_entr = 0;
-                del_file = alloc_space(fs, new_size, &entr);
-                SFS_TRACE("Deleted file was found:\n"
-                                "Size:  %d\n"
-                                "Start: %lu\n"
-                                "End:   %lu", 0,
-                                AS_DFILE(&entr)->start_block,
-                                AS_DFILE(&entr)->end_block);
- 
-                if (del_file == 0) {
-                        SET_ERRNO(ENOMEM);
-                        SFS_TRACE("No space.");
+                if (new_start != 0) {
+                        if (try_expand(fs, start, new_size, &entr) == 0) {
+                                new_end = new_start + 
+                                          (get_real_size(fs, new_size) 
+                                               / fs->bdev->block_size) - 1;
+                                goto END;
+                        }
+                } 
+                if ((new_start = del_file_list_alloc(fs, &entr, new_size))
+                                        == 0) {
+                        SFS_TRACE("Can't alloc space");
                         return -1;
                 }
-                new_start = AS_DFILE(&entr)->start_block;
-                new_end = AS_DFILE(&entr)->start_block + 
-                          (get_real_size(fs, new_size) / 
-                          fs->bdev->block_size) - 1;
-
-                if (new_end == AS_DFILE(&entr)->end_block) {
-                        free_entry(fs, &entr, start, 1);
-                } else {
-                        AS_DFILE(&entr)->start_block = new_end + 1;
-                }
-                write_entry(fs->bdev, del_file, &entr);
-
+                new_end = new_start + (get_real_size(fs, new_size) 
+                                       / fs->bdev->block_size) - 1;
+                
                 if (old_start != 0) {
+                        del_file_list_add(fs, &entr, old_start, old_end);
                         if (copy_block(fs->bdev, old_start, new_start, 
                                        old_end - old_start + 1) != 0) {
                                 SFS_TRACE("Can't copy blocks");
                                 return -1;
                         }
-
-                        if ((new_del_entr = alloc_entry(fs, &entr, 1)) 
-                                        == 0) {
-                                SFS_TRACE("No inode for new del file");
-                                return -1;
-                        }
-                        AS_DFILE(&entr)->entry_type = DEL_FILE_ENTRY;
-                        AS_DFILE(&entr)->cont_entries = 0;
-                        AS_DFILE(&entr)->time_stamp = get_time();
-                        AS_DFILE(&entr)->start_block = old_start;
-                        AS_DFILE(&entr)->end_block = old_end;
-                        strcpy((char*) AS_DFILE(&entr)->name, "free");
-                        write_entry(fs->bdev, new_del_entr, &entr);
                 }
         }
+END:
         read_entry(fs->bdev, start, &entr);
         AS_FILE(&entr)->start_block = new_start;
         AS_FILE(&entr)->end_block = new_end;

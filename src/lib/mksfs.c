@@ -108,7 +108,7 @@ int image_create(struct sfs_options sfs_opts)
         del_entry.time_stamp = (uint64_t)NULL;
         del_entry.start_block = mbr_block.reserved_size; 
         del_entry.end_block = mbr_block.reserved_size + 
-                              mbr_block.data_area_size;
+                              mbr_block.data_area_size - 1;
         del_entry.size = (uint64_t)NULL;
         strncpy((char*)del_entry.name, "*free", 29);
         g_offset_start += INDEX_ENTRY_SIZE;

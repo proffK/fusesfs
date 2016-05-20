@@ -19,4 +19,19 @@ int read_file_name(sfs_unit* fs, file_entry* entr, off_t file_off,
 off_t search_file_mask(sfs_unit* fs, char* filepath, 
                        entry* entr, off_t entr_off);
 
+off_t del_file_list_alloc(sfs_unit* fs, entry* entr, size_t size);
+
+int del_file_list_add(sfs_unit* fs, entry* entr, uint64_t start, uint64_t end);
+
+int try_expand(sfs_unit* fs, off_t off, size_t new_size, entry* entr);
+
+static inline size_t get_real_size(sfs_unit* fs, size_t size)
+{
+        return fs->bdev->block_size * ((size / fs->bdev->block_size) +
+                        !!(size % fs->bdev->block_size));
+}
+
+#define NEXT_DEL(entr) AS_DFILE(entr)->size
+#define PREV_DEL(entr) AS_DFILE(entr)->time_stamp
+
 #endif

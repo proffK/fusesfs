@@ -15,7 +15,7 @@
 #define TRUE_SIZE (256 * 40)
 #define TI_TIME 0
 #define TI_ENTRY_START 0x1400
-#define TI_DEL_BEGIN 0
+#define TI_DEL_BEGIN 0x1440
 #define TI_VOL_IDENT 0x27C0
 
 START_TEST(test_sfs_unlink)

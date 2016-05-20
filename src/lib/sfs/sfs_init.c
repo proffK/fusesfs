@@ -5,6 +5,20 @@
 #include <sfs/debug.h>
 #include <sfs/io.h>
 #include <sfs/entry.h>
+#include <sfs/callback.h>
+#include <sfs/fsutils.h>
+
+#define AS_DFILE(entr) ((del_file_entry*)entr)
+
+static int search_begin(sfs_unit* fs, entry* entr, off_t entry_off, void* data)
+{
+        if (entr->entry_type != DEL_FILE_ENTRY) 
+                return 0;
+        if (PREV_DEL(entr) == 0)
+                return 1;
+
+        return 0;
+}       
 
 int sfs_init(sfs_unit* fs, blockdev* bdev)
 {
@@ -21,6 +35,7 @@ int sfs_init(sfs_unit* fs, blockdev* bdev)
         uint8_t checksum = 0;
         uint64_t new_timestamp = 0;
         uint8_t zero_folder_entry = 0;
+        entry entr;
         SFS_TRACE("Read MBR fields from image");
         /* Read data_area_size */ 
         if (read_data(bdev, offsetof(struct mbr_t, data_area_size), 
@@ -68,7 +83,6 @@ int sfs_init(sfs_unit* fs, blockdev* bdev)
         data_area_size *= block_size;
         fs->entry_start = reserved_size + data_area_size;
         fs->vol_ident = fs->entry_start + index_area_size - INDEX_ENTRY_SIZE;
-        fs->del_begin = 0;
         fs->bdev = bdev;
         /* Try to recognize zero folder */
         if (read_data(bdev, fs->entry_start + 2*INDEX_ENTRY_SIZE, 
@@ -76,6 +90,10 @@ int sfs_init(sfs_unit* fs, blockdev* bdev)
                 return -1;
         if (zero_folder_entry != DIR_ENTRY)
                 return -1;
+
+        if ((fs->del_begin = entry_parse(fs, &entr, search_begin, NULL)) == 0)
+                return -1;
+
         /* Read last modification time */ 
         if (read_data(bdev, fs->entry_start + 2*INDEX_ENTRY_SIZE +
                       offsetof(dir_entry, dir_name), &zero_folder_entry,

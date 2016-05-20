@@ -2,6 +2,7 @@
 #include <sfs/defs.h>
 #include <sfs/utils.h>
 #include <sfs/entry.h>
+#include <sfs/alloc.h>
 #include <sfs/debug.h>
 #include <sfs/callback.h>
 
@@ -422,5 +423,247 @@ int read_dir_name(sfs_unit* fs, dir_entry* entr,
         *curout = '\0';
         SFS_TRACE("Succesfully read dirname %s", str);
 
+        return 0;
+}
+#define AS_FILE(entr) ((file_entry*) entr)
+#define AS_DFILE(entr) ((del_file_entry*) entr)
+
+static off_t del_next(sfs_unit* fs, entry* entr)
+{
+        off_t ret = NEXT_DEL(entr);
+        if (ret == 0) {
+                return 0;
+        }
+        if (read_entry(fs->bdev, ret, entr) == -1) {
+                return (off_t) -1;
+        }
+        return ret;
+}
+
+static int del_file_list_remove(sfs_unit* fs, off_t off, entry* entr)
+{
+        off_t next = 0;
+        off_t prev = 0;
+        read_entry(fs->bdev, off, entr);
+        prev = PREV_DEL(entr);
+        next = NEXT_DEL(entr);
+
+        if (prev != 0) {
+                read_entry(fs->bdev, prev, entr);
+                NEXT_DEL(entr) = next;
+                write_entry(fs->bdev, prev, entr);
+        } else {
+                fs->del_begin = next;
+        }
+        if (next != 0) {
+                read_entry(fs->bdev, next, entr);
+                PREV_DEL(entr) = prev;
+                write_entry(fs->bdev, next, entr);
+        } 
+        free_entry(fs, entr, off, 1);
+
+        return 0;
+}
+
+int del_file_list_add(sfs_unit* fs, entry* entr, uint64_t start, uint64_t end)
+{
+        off_t next = 0;
+        off_t prev = 0;
+        off_t off = 0;
+        uint64_t watchdog = 1 + (fs->vol_ident - fs->entry_start) 
+                                / INDEX_ENTRY_SIZE;
+
+        if (start == 0 && end == 0) {
+                return 0;
+        }
+
+        SFS_TRACE("Add %lu %lu in deleted file list", start, end);
+        read_entry(fs->bdev, fs->del_begin, entr);
+        off = fs->del_begin;
+
+        while (off != 0 && watchdog--) {
+                SFS_TRACE("Del list elem:"
+                                "Offset:  %lu\n"
+                                "Start:   %lu\n"
+                                "End:     %lu\n"
+                                "Prev:    %lu\n"
+                                "Next:    %lu\n",
+                                off, 
+                                AS_DFILE(entr)->start_block,
+                                AS_DFILE(entr)->end_block,
+                                PREV_DEL(entr),
+                                NEXT_DEL(entr));
+
+                if (AS_DFILE(entr)->end_block + 1 == start) {
+                        SFS_TRACE("Prev %lu was found", off);
+                        prev = off;
+                        off = del_next(fs, entr);
+                        continue;
+                }
+                if (AS_DFILE(entr)->start_block - 1 == end) {
+                        SFS_TRACE("Next %lu was found", off);
+                        next = off;
+                }
+                if ((off = del_next(fs, entr)) == (off_t) -1) {
+                        return -1;
+                }
+                if (prev != 0 && next != 0)
+                        break;
+        }
+        if (watchdog == 0) return -1;
+
+        if (next != 0) {
+                read_entry(fs->bdev, next, entr);
+                AS_DFILE(entr)->start_block = start;
+                if (prev != 0) {
+                        off_t prev_start = 0;
+                        read_entry(fs->bdev, prev, entr);
+                        prev_start = AS_DFILE(entr)->start_block;
+                        del_file_list_remove(fs, prev, entr);
+                        read_entry(fs->bdev, next, entr);
+                        AS_DFILE(entr)->start_block = prev_start;
+                        write_entry(fs->bdev, next, entr);
+                        return 0;
+                } else {
+                        write_entry(fs->bdev, fs->del_begin, entr);
+                }
+                return 0;
+        } else if (prev != 0) {
+                read_entry(fs->bdev, prev, entr);
+                AS_DFILE(entr)->end_block = end;
+                write_entry(fs->bdev, prev, entr);
+                return 0;
+        } else {
+                off_t new = alloc_entry(fs, entr, 1);
+                if (new == 0) {
+                        SET_ERRNO(ENOMEM);
+                        return -1;
+                }
+                AS_DFILE(entr)->entry_type = DEL_FILE_ENTRY;
+                AS_DFILE(entr)->cont_entries = 0;
+                PREV_DEL(entr) = 0;
+                NEXT_DEL(entr) = fs->del_begin;
+                AS_DFILE(entr)->start_block = start;
+                AS_DFILE(entr)->end_block = end;
+                strcpy((char*) AS_DFILE(entr)->name, "free"); 
+                // TODO: start and end block in free name;
+                write_entry(fs->bdev, new, entr);
+                SFS_TRACE("Allocated entry:"
+                                "Offset:  %lu\n"
+                                "Start:   %lu\n"
+                                "End:     %lu\n"
+                                "Prev:    %lu\n"
+                                "Next:    %lu\n",
+                                new, 
+                                AS_DFILE(entr)->start_block,
+                                AS_DFILE(entr)->end_block,
+                                PREV_DEL(entr),
+                                NEXT_DEL(entr));
+
+                if (off != 0) {
+                        read_entry(fs->bdev, fs->del_begin, entr);
+                        PREV_DEL(entr) = new;
+                        write_entry(fs->bdev, fs->del_begin, entr);
+                }
+                fs->del_begin = new;
+        }
+        return 0;
+}
+
+static inline size_t get_size(sfs_unit* fs, entry* entr) 
+{
+        return fs->bdev->block_size * ((AS_DFILE(entr)->end_block) - 
+                AS_DFILE(entr)->start_block + 1);
+}
+
+off_t del_file_list_alloc(sfs_unit* fs, entry* entr, size_t size)
+{
+        size_t cur_max = 0;
+        off_t off = fs->del_begin;
+        off_t cur_max_entr = off;
+        uint64_t watchdog = 1 + (fs->vol_ident - fs->entry_start) 
+                                / INDEX_ENTRY_SIZE;
+        size_t real_size = get_real_size(fs, size);
+
+        while (off != 0 && watchdog--) {
+                size_t cur_size = 0;
+                if (read_entry(fs->bdev, off, entr) == 0) {
+                        SFS_TRACE("Can't read");
+                        return 0;
+                }
+                if ((cur_size = get_size(fs, entr)) > cur_max) {
+                        cur_max_entr = off;
+                        cur_max = cur_size;
+                }
+                off = del_next(fs, entr);
+        }
+        if (watchdog == 0) return 0;
+
+        SFS_TRACE("Real size %lu CURMAX %lu", real_size, cur_max);
+        if (real_size > cur_max) {
+                SET_ERRNO(ENOSPC);
+                return 0;
+        } else if (real_size == cur_max) {
+                off_t ret = 0;
+                read_entry(fs->bdev, cur_max_entr, entr);
+                ret = AS_DFILE(entr)->start_block;
+                del_file_list_remove(fs, cur_max_entr, entr);
+                return ret;
+        } else {
+                off_t ret = 0;
+                read_entry(fs->bdev, cur_max_entr, entr);
+                ret = AS_DFILE(entr)->start_block;
+                AS_DFILE(entr)->start_block += 
+                                (real_size / fs->bdev->block_size);
+                SFS_TRACE("New start block %lu in entry %lu", 
+                                AS_DFILE(entr)->start_block,
+                                cur_max_entr);
+                write_entry(fs->bdev, cur_max_entr, entr);
+                return ret;
+        }
+                
+        return 0;
+}
+
+int try_expand(sfs_unit* fs, off_t off, size_t new_size, entry* entr)
+{
+        size_t delta_block = 0;
+        off_t end = 0;
+        read_entry(fs->bdev, off, entr);
+        end = AS_FILE(entr)->end_block;
+        uint64_t watchdog = 1 + (fs->vol_ident - fs->entry_start) 
+                                / INDEX_ENTRY_SIZE;
+        delta_block = get_real_size(fs, new_size) - 
+                      get_real_size(fs, AS_FILE(entr)->size);
+        off = fs->del_begin;
+        SFS_TRACE("TRY EXPAND####################");
+
+        while (off != 0 && watchdog--) {
+                if (read_entry(fs->bdev, off, entr) == 0) {
+                        SFS_TRACE("Can't read");
+                        return -1;
+                }
+                if ((AS_DFILE(entr)->start_block == (end + 1)) &&
+                    (get_size(fs, entr) >= delta_block)) {
+                        SFS_TRACE("Donor FOUUUUUND %lu", off);
+                        break;
+                }
+                off = del_next(fs, entr);
+        }
+        if (watchdog == 0) return -1;
+        if (off == 0) return 1;
+
+        if (get_size(fs, entr) == delta_block) {
+                del_file_list_remove(fs, off, entr);
+                return 0;
+        }
+       
+        if (get_size(fs, entr) > delta_block) {
+                AS_DFILE(entr)->start_block += (delta_block 
+                                                / fs->bdev->block_size);
+                SFS_TRACE("!!!!!!!!!!! %lu", AS_DFILE(entr)->start_block);
+                write_entry(fs->bdev, off, entr);
+                return 0;
+        }
         return 0;
 }

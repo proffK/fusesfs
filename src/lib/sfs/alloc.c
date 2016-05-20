@@ -71,6 +71,7 @@ static int free_one_entry(sfs_unit* fs, entry* entr, off_t entr_off)
                 return -1;
         }
         entr->entry_type = UNUSED_ENTRY;
+        write_entry(fs->bdev, entr_off, entr);
         return 0;
 }
 
