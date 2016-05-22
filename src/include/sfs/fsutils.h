@@ -25,6 +25,8 @@ int del_file_list_add(sfs_unit* fs, entry* entr, uint64_t start, uint64_t end);
 
 int try_expand(sfs_unit* fs, off_t off, size_t new_size, entry* entr);
 
+int file_shrink(sfs_unit* fs, off_t off, size_t new_size, entry* entr);
+
 static inline size_t get_real_size(sfs_unit* fs, size_t size)
 {
         return fs->bdev->block_size * ((size / fs->bdev->block_size) +

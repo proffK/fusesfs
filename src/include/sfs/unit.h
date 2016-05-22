@@ -52,7 +52,7 @@ off_t sfs_unlink(sfs_unit* fs, const char* filepath);
 
 int sfs_delete(sfs_unit* fs, off_t file);
 
-off_t sfs_rename(sfs_unit* fs, const char* oldpath, const char* newpath);
+off_t sfs_rename(sfs_unit* fs, off_t file, const char* newpath);
 
 int sfs_getattr(sfs_unit* fs, off_t file, sfs_attr* attr);
 
@@ -64,4 +64,6 @@ int sfs_readdir(sfs_unit* fs, diriter* iter);
 
 ssize_t sfs_write(sfs_unit* fs, off_t file, 
                   char* data, size_t size, off_t off);
+
+int sfs_truncate(sfs_unit* fs, off_t file, size_t new_size);
 #endif

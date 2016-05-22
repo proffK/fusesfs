@@ -667,3 +667,19 @@ int try_expand(sfs_unit* fs, off_t off, size_t new_size, entry* entr)
         }
         return 0;
 }
+
+int file_shrink(sfs_unit* fs, off_t off, size_t new_size, entry* entr)
+{
+        size_t delta_block = 0;
+        off_t end = 0;
+        read_entry(fs->bdev, off, entr);
+        end = AS_FILE(entr)->end_block;
+        delta_block = get_real_size(fs, AS_FILE(entr)->size) - 
+                      get_real_size(fs, new_size);
+        
+        if (delta_block == 0) 
+                return 0;
+
+        del_file_list_add(fs, entr, end - delta_block + 1, end); 
+        return 0;
+}

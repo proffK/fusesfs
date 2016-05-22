@@ -19,6 +19,8 @@ START_TEST(test_sfs_readdir)
         filedev_data fdev;
         blockdev bdev;
         sfs_unit fs;
+        off_t file1 = 0;
+        off_t file2 = 0;
         int i = 0;
 
         fdev.fd = -1;
@@ -39,12 +41,14 @@ START_TEST(test_sfs_readdir)
         ck_assert(sfs_mkdir(&fs, "test*ile") == -1);
         ck_assert(sfs_mkdir(&fs, "testdir") == -1);
 
+        ck_assert((file1 = sfs_open(&fs, "testfile1")) != 0);
+        ck_assert((file2 = sfs_open(&fs, "testfile2")) != 0);
         for (; i < 1024 ; i += 8) {
-                ck_assert(sfs_write(&fs, "testfile1", "aaaaaaa", 8, i) == 8);
-//                ck_assert(sfs_write(&fs, "testfile2", "bbbbbbb", 8, i) == 8);
+                ck_assert(sfs_write(&fs, file1, "aaaaaaa", 8, i) == 8);
+                ck_assert(sfs_write(&fs, file2, "bbbbbbb", 8, i) == 8);
         }
-        ck_assert(sfs_write(&fs, "testfile1", "ccccccc", 8, i) == 8);
-        ck_assert(sfs_write(&fs, "testfile2", "ddddddd", 8, 0) == 8);
+        ck_assert(sfs_write(&fs, file1, "ccccccc", 8, i) == 8);
+        ck_assert(sfs_write(&fs, file2, "ddddddd", 8, 0) == 8);
  
         bdev.release(&bdev);
         ck_assert(errno == 0);

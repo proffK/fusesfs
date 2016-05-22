@@ -10,12 +10,10 @@
 #define AS_FILE(entr) ((file_entry*) (entr))
 #define AS_DFILE(entr) ((del_file_entry*) (entr))
 
-ssize_t sfs_write(sfs_unit* fs, off_t file, 
-                  char* data, size_t size, off_t off)
+int sfs_truncate(sfs_unit* fs, off_t file, size_t new_size)
 {
         entry entr;
         size_t old_size = 0;
-        size_t new_size = 0;
         off_t old_start = 0;
         off_t old_end = 0;
         off_t new_start = 0;
@@ -29,27 +27,33 @@ ssize_t sfs_write(sfs_unit* fs, off_t file,
         old_size = AS_FILE(&entr)->size;
         old_start = AS_FILE(&entr)->start_block;
         old_end = AS_FILE(&entr)->end_block;
-        SFS_TRACE("Try write to file:\n"
+        SFS_TRACE("Try truncate file:\n"
                         "Size:  %lu\n"
                         "Start: %lu\n"
-                        "End:   %lu", old_size,
-                        old_start, old_end);
+                        "End:   %lu"
+                        "New size : %lu\n", 
+                        old_size, old_start, 
+                        old_end, new_size);
  
-        if (off > old_size) {
-                SFS_TRACE("Invalid offset");
-                SET_ERRNO(EINVAL);
-                return -1;
-        }
-        
-        if (off + size > old_size) {
-                new_size = off + size;
-        } else {
-                new_size = old_size;
-        }
-
         new_start = old_start;
         new_end = old_end;
-        SFS_TRACE("New size %lu", new_size);
+
+        if (new_size == 0) {
+                del_file_list_add(fs, &entr, old_start, old_end);
+                new_start = 0;
+                new_end = 0;
+                goto END;
+        }
+
+        if (get_real_size(fs, new_size) < get_real_size(fs, old_size)) {
+                if (file_shrink(fs, file, new_size, &entr) != 0) {
+                        return -1;
+                }
+                new_end = new_start + 
+                          (get_real_size(fs, new_size) 
+                               / fs->bdev->block_size) - 1;
+                goto END;
+        }
 
         if (get_real_size(fs, new_size) > get_real_size(fs, old_size)) {
                 if (new_start != 0) {
@@ -86,6 +90,5 @@ END:
         write_entry(fs->bdev, file, &entr);
  
         update(fs);
-        return write_data(fs->bdev, new_start * fs->bdev->block_size + off,
-                          (uint8_t*) data, size);
+        return 0;
 }

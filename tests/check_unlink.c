@@ -40,9 +40,9 @@ START_TEST(test_sfs_unlink)
         ck_assert_int_eq(fs.vol_ident, TI_VOL_IDENT);
 
         ck_assert(sfs_creat(&fs, "testfile") == 0);
+        ck_assert(sfs_unlink(&fs, "testfile") != 0);
         ck_assert(sfs_unlink(&fs, "testfile") == 0);
-        ck_assert(sfs_unlink(&fs, "testfile") == -1);
-        ck_assert(sfs_unlink(&fs, teststr) == -1);
+        ck_assert(sfs_unlink(&fs, teststr) == 0);
 
         bdev.release(&bdev);
         ck_assert(errno == 0);
