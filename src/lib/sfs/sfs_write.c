@@ -10,11 +10,10 @@
 #define AS_FILE(entr) ((file_entry*) (entr))
 #define AS_DFILE(entr) ((del_file_entry*) (entr))
 
-ssize_t sfs_write(sfs_unit* fs, const char* filepath, 
+ssize_t sfs_write(sfs_unit* fs, off_t file, 
                   char* data, size_t size, off_t off)
 {
         entry entr;
-        off_t start = 0;
         size_t old_size = 0;
         size_t new_size = 0;
         off_t old_start = 0;
@@ -22,15 +21,11 @@ ssize_t sfs_write(sfs_unit* fs, const char* filepath,
         off_t new_start = 0;
         off_t new_end = 0;
 
-        if (is_correct_filepath(filepath) != 0) {
-                SFS_TRACE("Incorrect filename %s", filepath);
-                return -1;
+        if (read_entry(fs->bdev, file, &entr) == -1) {
+                SET_ERRNO(EIO);
+                return 0;
         }
-        
-        if ((start = search_file(fs, (char*) filepath, &entr)) == 0) {
-                SFS_TRACE("File not %s exist. Offset: %lu", filepath, start);
-                return -1;
-        }
+
         old_size = AS_FILE(&entr)->size;
         old_start = AS_FILE(&entr)->start_block;
         old_end = AS_FILE(&entr)->end_block;
@@ -58,7 +53,7 @@ ssize_t sfs_write(sfs_unit* fs, const char* filepath,
 
         if (get_real_size(fs, new_size) > get_real_size(fs, old_size)) {
                 if (new_start != 0) {
-                        if (try_expand(fs, start, new_size, &entr) == 0) {
+                        if (try_expand(fs, file, new_size, &entr) == 0) {
                                 new_end = new_start + 
                                           (get_real_size(fs, new_size) 
                                                / fs->bdev->block_size) - 1;
@@ -83,11 +78,11 @@ ssize_t sfs_write(sfs_unit* fs, const char* filepath,
                 }
         }
 END:
-        read_entry(fs->bdev, start, &entr);
+        read_entry(fs->bdev, file, &entr);
         AS_FILE(&entr)->start_block = new_start;
         AS_FILE(&entr)->end_block = new_end;
         AS_FILE(&entr)->size = new_size;
-        write_entry(fs->bdev, start, &entr);
+        write_entry(fs->bdev, file, &entr);
  
         update(fs);
         return write_data(fs->bdev, new_start * fs->bdev->block_size + off,

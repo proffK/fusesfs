@@ -3,7 +3,7 @@
 #include <bdev/blockdev.h>
 #include <sfs/io.h>
 #include <sfs/defs.h>
-
+ 
 typedef struct {
         blockdev* bdev;
         time_t time;
@@ -40,17 +40,21 @@ static inline void update(sfs_unit* fs)
 
 int sfs_init(sfs_unit* fs, blockdev* bdev);
 
+off_t sfs_open(sfs_unit* fs, const char* filepath);
+
 int sfs_release(sfs_unit* fs);
 
-ssize_t sfs_read(sfs_unit* fs, const char* filepath, char* data, size_t size, off_t off);
+ssize_t sfs_read(sfs_unit* fs, off_t file, char* data, size_t size, off_t off);
 
 int sfs_creat(sfs_unit* fs, const char* filepath);
 
-int sfs_unlink(sfs_unit* fs, const char* filepath);
+off_t sfs_unlink(sfs_unit* fs, const char* filepath);
 
-int sfs_rename(sfs_unit* fs, const char* oldpath, const char* newpath);
+int sfs_delete(sfs_unit* fs, off_t file);
 
-int sfs_getattr(sfs_unit* fs, const char* filepath, sfs_attr* attr);
+off_t sfs_rename(sfs_unit* fs, const char* oldpath, const char* newpath);
+
+int sfs_getattr(sfs_unit* fs, off_t file, sfs_attr* attr);
 
 int sfs_mkdir(sfs_unit* fs, const char* dirpath);
 
@@ -58,6 +62,6 @@ int sfs_rmdir(sfs_unit* fs, const char* dirpath);
 
 int sfs_readdir(sfs_unit* fs, diriter* iter);
 
-ssize_t sfs_write(sfs_unit* fs, const char* filepath, 
+ssize_t sfs_write(sfs_unit* fs, off_t file, 
                   char* data, size_t size, off_t off);
 #endif

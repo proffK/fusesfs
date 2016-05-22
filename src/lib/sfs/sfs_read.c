@@ -9,24 +9,19 @@
 
 #define AS_FILE(entr) ((file_entry*) (entr))
 
-ssize_t sfs_read(sfs_unit* fs, const char* filepath, 
+ssize_t sfs_read(sfs_unit* fs, off_t file, 
                   char* data, size_t size, off_t off)
 {
         entry entr;
-        off_t start = 0;
         size_t file_size = 0;
         off_t file_start = 0;
         size_t read_size = 0;
 
-        if (is_correct_filepath(filepath) != 0) {
-                SFS_TRACE("Incorrect filename %s", filepath);
-                return -1;
+        if (read_entry(fs->bdev, file, &entr) == -1) {
+                SET_ERRNO(EIO);
+                return 0;
         }
-        
-        if ((start = search_file(fs, (char*) filepath, &entr)) == 0) {
-                SFS_TRACE("File not %s exist. Offset: %lu", filepath, start);
-                return -1;
-        }
+
         file_size = AS_FILE(&entr)->size;
         file_start = AS_FILE(&entr)->start_block;
 
