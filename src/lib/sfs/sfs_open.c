@@ -12,7 +12,10 @@ off_t sfs_open(sfs_unit* fs, const char* filepath)
         off_t file = 0;
 
         if ((file = search_file(fs, (char*) filepath, &entr)) == 0) {
-                SFS_TRACE("File not %s exist. Offset: %lu", filepath, file);
+                if ((file = search_dir(fs, (char*) filepath, &entr)) == 0) {
+                SFS_TRACE("Entry not %s exist. Offset: %lu", filepath, file);
+                SET_ERRNO(ENOENT);
+                }
         }
 
         return file;

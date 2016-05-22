@@ -1,5 +1,5 @@
 bin_PROGRAMS = fusesfs
-fusesfs_SOURCES = main.c
+fusesfs_SOURCES = main.c inode.c
 
 
 fusesfs_LDFLAGS = -L$(top_srcdir)/src/lib -L$(top_srcdir)/src/lib/sfs -lblock -lsfs 
