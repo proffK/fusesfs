@@ -168,7 +168,7 @@ static int read_dir_entry(sfs_unit* fs, entry* entr,
         }
 
         if (*curin == '\0') {
-                if (*cur == '\0)
+                if (*cur == '\0')
                         return 1;
                 return 0;
         }
