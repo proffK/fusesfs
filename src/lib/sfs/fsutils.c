@@ -59,7 +59,6 @@ static int check_file_mask(sfs_unit* fs, entry* entr,
                         c = INDEX_ENTRY_SIZE;
                         cur = (char*) entr;
                 }
-
         }
 
         SFS_TRACE("Found mask %s", (char*) data);
@@ -79,12 +78,14 @@ static int read_file_entry(sfs_unit* fs, entry* entr,
                 return 0;
 
         SFS_TRACE("Cheking file %s in entry %lu", (char*) data, entry_off);
+        cur = (char*) ((file_entry*) entr)->name;
 
-        if (*curin == '\0') {
+        if (*curin == '\0' && cur == '\0') {
                 return 1;
+        } else {
+                return 0;
         }
 
-        cur = (char*) ((file_entry*) entr)->name;
         ce = ((file_entry*) entr)->cont_entries;
         c = FIRST_FILE_NAME_SIZE;
         while (*curin != '\0' && c != 0) {
@@ -94,9 +95,14 @@ static int read_file_entry(sfs_unit* fs, entry* entr,
                 curin++;
         }
 
-        if (*curin == '\0' && *cur == '\0') {
+        if (*curin == '\0') { 
+                if (curin != '\0') 
+                        return 0;
                 return 1;
         }
+
+        if (ce == 0)
+                return 0;
 
         entry_off += INDEX_ENTRY_SIZE;
         if (read_entry(fs->bdev, entry_off, entr) == 0) {
@@ -144,14 +150,16 @@ static int read_dir_entry(sfs_unit* fs, entry* entr,
                 return 0;
 
         SFS_TRACE("Cheking dir %s", (char*) data);
-
-        if (*curin == '\0') {
-                return 1;
-        }
-
         cur = (char*) ((dir_entry*) entr)->dir_name;
         ce = ((dir_entry*) entr)->cont_entries;
         c = FIRST_DIR_NAME_SIZE;
+
+        if (*curin == '\0' && cur == '\0') {
+                return 1;
+        } else {
+                return 0;
+        }
+
         while (*curin != '\0' && c != 0) {
                 if (*cur != *curin) return 0;
                 c--;
@@ -159,9 +167,14 @@ static int read_dir_entry(sfs_unit* fs, entry* entr,
                 curin++;
         }
 
-        if (*curin == '\0' && *cur == '\0') {
-                return 1;
+        if (*curin == '\0') {
+                if (*cur == '\0)
+                        return 1;
+                return 0;
         }
+
+        if (ce == 0) 
+                return 0;
 
         entry_off += INDEX_ENTRY_SIZE;
         if (read_entry(fs->bdev, entry_off, entr) == 0) {

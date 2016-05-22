@@ -12,7 +12,7 @@ int sfs_getattr(sfs_unit* fs, off_t file, sfs_attr* attr)
 
         if (read_entry(fs->bdev, file, &entr) == -1) {
                 SET_ERRNO(EIO);
-                return 0;
+                return -1;
         }
 
         if (entr.entry_type == FILE_ENTRY) {
