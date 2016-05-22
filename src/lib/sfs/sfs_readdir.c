@@ -44,7 +44,10 @@ int sfs_readdir(sfs_unit* fs, diriter* iter)
         if (start_len == 0) add = 0;
 
 RESTART:
-        name[start_len + add] = '\0';
+        if (*name != '\0') {
+                name[start_len] = '/';
+                name[start_len + add] = '\0';
+        }
         SFS_TRACE("Try to search file mask %s", name);
         off = search_file_mask(fs, name, &entr, off);
 

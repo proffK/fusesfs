@@ -80,10 +80,10 @@ static int read_file_entry(sfs_unit* fs, entry* entr,
         SFS_TRACE("Cheking file %s in entry %lu", (char*) data, entry_off);
         cur = (char*) ((file_entry*) entr)->name;
 
-        if (*curin == '\0' && cur == '\0') {
+        if (*curin == '\0') { 
+                if (*cur != '\0') 
+                        return 0;
                 return 1;
-        } else {
-                return 0;
         }
 
         ce = ((file_entry*) entr)->cont_entries;
@@ -95,8 +95,15 @@ static int read_file_entry(sfs_unit* fs, entry* entr,
                 curin++;
         }
 
-        if (*curin == '\0') { 
-                if (curin != '\0') 
+        if (*curin == '\0' && c != 0) {
+                if (*cur == '\0')
+                        return 1;
+                return 0;
+        }
+
+        if (*curin == '\0' && ce == 0) { 
+                SFS_TRACE("########## %d off %lu", *cur, entry_off);
+                if (*cur != '\0') 
                         return 0;
                 return 1;
         }
@@ -149,28 +156,34 @@ static int read_dir_entry(sfs_unit* fs, entry* entr,
         if (entr->entry_type != DIR_ENTRY) 
                 return 0;
 
-        SFS_TRACE("Cheking dir %s", (char*) data);
         cur = (char*) ((dir_entry*) entr)->dir_name;
         ce = ((dir_entry*) entr)->cont_entries;
         c = FIRST_DIR_NAME_SIZE;
 
-        if (*curin == '\0' && cur == '\0') {
+        if (*curin == '\0') { 
+                if (*cur != '\0') 
+                        return 0;
                 return 1;
-        } else {
-                return 0;
         }
-
+        SFS_TRACE("Cheking dir %s off %lu curin %d cur %d", (char*) data, entry_off, *curin, *cur);
         while (*curin != '\0' && c != 0) {
-                if (*cur != *curin) return 0;
+                if (*curin != *cur) return 0;
                 c--;
                 cur++;
                 curin++;
         }
 
-        if (*curin == '\0') {
+        if (*curin == '\0' && c != 0) {
                 if (*cur == '\0')
                         return 1;
                 return 0;
+        }
+
+        if (*curin == '\0' && ce == 0) { 
+                SFS_TRACE("########## %d off %lu", *cur, entry_off);
+                if (*cur != '\0') 
+                        return 0;
+                return 1;
         }
 
         if (ce == 0) 

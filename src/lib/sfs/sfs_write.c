@@ -35,12 +35,6 @@ ssize_t sfs_write(sfs_unit* fs, off_t file,
                         "End:   %lu", old_size,
                         old_start, old_end);
  
-        if (off > old_size) {
-                SFS_TRACE("Invalid offset");
-                SET_ERRNO(EINVAL);
-                return -1;
-        }
-        
         if (off + size > old_size) {
                 new_size = off + size;
         } else {
