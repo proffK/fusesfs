@@ -67,6 +67,9 @@ int sfs_creat(sfs_unit* fs, const char* filepath)
         AS_FILE(&entr)->time_stamp = get_time();
         AS_FILE(&entr)->entry_type = FILE_ENTRY;
         AS_FILE(&entr)->cont_entries = n;
+        AS_FILE(&entr)->start_block = 0;
+        AS_FILE(&entr)->end_block = 0;
+        AS_FILE(&entr)->size = 0;
         write_entry(fs->bdev, start, &entr);
         start += INDEX_ENTRY_SIZE;
 
