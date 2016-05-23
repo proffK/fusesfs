@@ -50,11 +50,10 @@ int sfs_rmdir(sfs_unit* fs, const char* dirpath)
 
         n = AS_DIR(&entr)->cont_entries;
         AS_DIR(&entr)->cont_entries = 0;
-        AS_DIR(&entr)->entry_type = DEL_FILE_ENTRY;
+        AS_DIR(&entr)->entry_type = UNUSED_ENTRY;
         write_entry(fs->bdev, start, &entr);
 
         start += INDEX_ENTRY_SIZE;
-        n--;
         free_entry(fs, &entr, start, n);
 
         update(fs);
