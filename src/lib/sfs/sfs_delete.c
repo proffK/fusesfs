@@ -29,7 +29,6 @@ int sfs_delete(sfs_unit* fs, off_t file)
         write_entry(fs->bdev, file, &entr);
 
         file += INDEX_ENTRY_SIZE;
-        n--;
         free_entry(fs, &entr, file, n);
 
         del_file_list_add(fs, &entr, start_block, end_block);
