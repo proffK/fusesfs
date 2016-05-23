@@ -13,6 +13,7 @@ typedef struct {
         /* Physical inode */
         pino_t pino;
         int dirty;
+        int openbit;
 } file_t;
 
 typedef struct  {
@@ -85,6 +86,22 @@ static inline int set_pino(vino_t vino, pino_t new_pino)
         inode_map->inode_table[vino].pino = new_pino;
         return 0; 
 }
+
+static inline int set_openbit(vino_t vino)
+{
+        inode_map->inode_table[vino].openbit = 1;
+        return 0;
+}
+
+static inline int clr_openbit(vino_t vino)
+{
+        inode_map->inode_table[vino].openbit = 0;
+        return 0;
+}
+
+static inline int get_openbit(vino_t vino) {
+        return inode_map->inode_table[vino].openbit;
+}
 /*
  * Print vino info
  */
@@ -94,5 +111,6 @@ int vino_dump(vino_t vino);
  * Print inode map 
  */
 int inode_map_dump(void);
+
 
 #endif

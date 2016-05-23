@@ -6,10 +6,11 @@ inode_map_t* inode_map = NULL;
 
 static int inode_map_resize(void) 
 { 
-        inode_map_t* buffer = inode_map;
-        inode_map = realloc(inode_map, (inode_map->c_size) * 2);
-        if (inode_map == NULL) {
-                inode_map = buffer;
+        file_t* buffer = inode_map->inode_table;
+        inode_map->inode_table = (file_t*)realloc(inode_map->inode_table, 
+                                 (inode_map->c_size) * 2 * sizeof(file_t));
+        if (inode_map->inode_table == NULL) {
+                inode_map->inode_table = buffer;
                 return -1;
         }
         inode_map->c_size *= 2;
@@ -45,8 +46,9 @@ vino_t pino_add(pino_t pino)
                 if (inode_map_resize() != 0)
                         return 0;
         inode_map->inode_table[inode_map->max_vino].pino = pino;
-        inode_map->inode_table[inode_map->max_vino].dirty = 0;
-        
+        inode_map->inode_table[inode_map->max_vino].dirty = 0; 
+        inode_map->inode_table[inode_map->max_vino].openbit = 0;
+
         (inode_map->max_vino)++;
         return inode_map->max_vino - 1;
 }

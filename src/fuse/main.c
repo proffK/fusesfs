@@ -131,13 +131,29 @@ static void* fuse_sfs_init()
         fstat(temp_fd, &dstat); 
         lseek(temp_fd, offsetof(struct mbr_t, block_size), SEEK_SET);
         if (read(temp_fd, &bs_p2, 1) == 0) {
+                perror("");
                 close(temp_fd);
+                free(bdev->dev_data);
+                free(bdev);
+                free(sfs_description);
                 exit(EXIT_FAILURE);
         }
         bs = 128 << bs_p2;
+        if (bs <= 128) {
+                fprintf(stderr, "Block size isn't valid!\n");
+                close(temp_fd);
+                free(fdev);
+                free(bdev);
+                free(sfs_description);
+                exit(EXIT_FAILURE);
+        }
         lseek(temp_fd, offsetof(struct mbr_t, total_size), SEEK_SET);
         if (read(temp_fd, &file_size, 8) == 0) {
+                perror("");
                 close(temp_fd);
+                free(fdev);
+                free(bdev);
+                free(sfs_description);
                 exit(EXIT_FAILURE);
         }
         close(temp_fd);
@@ -149,16 +165,18 @@ static void* fuse_sfs_init()
         bdev = filedev_create(bdev, fdev, bs, file_size * bs);
         fdev->filename = imagefile;
         if (blockdev_init(bdev) != 0) {
-                free(sfs_description->bdev->dev_data);
-                free(sfs_description->bdev);
+                perror("");
+                free(fdev);
+                free(bdev);
                 free(sfs_description);
                 exit(EXIT_FAILURE);
         }
 
         if (sfs_init(sfs_description, bdev) < 0) {
-                bdev->release(sfs_description->bdev);
-                free(sfs_description->bdev->dev_data);
-                free(sfs_description->bdev);
+                fprintf(stderr, "The image was corrupted.\n");
+                bdev->release(bdev);
+                free(bdev->dev_data);
+                free(bdev);
                 free(sfs_description);
                 exit(EXIT_FAILURE);
         }
@@ -178,6 +196,7 @@ static void* fuse_sfs_init()
                 free(sfs_description->bdev->dev_data);
                 free(sfs_description->bdev);
                 free(sfs_description);
+                exit(EXIT_FAILURE);
         }
 
         SFS_TRACE("Init finished");
@@ -224,6 +243,8 @@ static int fuse_sfs_getattr(const char* path, struct stat *stbuf)
                 stbuf->st_mode = S_IFDIR;
         stbuf->st_mode |= S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP |
                           S_IROTH;
+        stbuf->st_uid = getuid();
+        stbuf->st_gid = getgid();
         free(cpath);
         return 0;
 }
@@ -244,6 +265,7 @@ static int fuse_sfs_open(const char* path, struct fuse_file_info* fi)
                         return -ENOMEM;
                 }
         }
+        set_openbit(vino);
         free(cpath);
         fi->fh = vino;
         vino_dump(vino);
@@ -260,6 +282,7 @@ static int fuse_sfs_release(const char* path, struct fuse_file_info* fi)
                         return -sfs_errno;
                 set_pino(vino, 0);
         }
+        clr_openbit(vino);
         return 0;                
 };        
 
@@ -343,7 +366,7 @@ static int fuse_sfs_unlink(const char* path)
         char* cpath = new_path(path);
         pino_t pino = 0;
         vino_t vino = 0;
-
+     
         if ((pino = sfs_unlink(sfs_description, cpath)) == 0) {
                 free(cpath);
                 return -sfs_errno;
@@ -355,8 +378,14 @@ static int fuse_sfs_unlink(const char* path)
                         return -sfs_errno;
                 return 0;
         }
+        if (get_openbit(vino) == 1)
+                set_dirty(vino);
+        else {
+                if (sfs_delete(sfs_description, pino) == -1)
+                        return -sfs_errno;
+                set_pino(vino, 0);
+        }  
 
-        set_dirty(vino); 
         free(cpath);
         return 0;
 }
@@ -445,12 +474,15 @@ static int fuse_sfs_utime(const char* path, struct utimbuf* buf)
 
 static int fuse_sfs_truncate(const char* path, off_t length) 
 {
-        pino_t pino = sfs_open(sfs_description, path);
+        path++;
+        char* cpath = new_path(path);
+        pino_t pino = sfs_open(sfs_description, cpath);
         SFS_TRACE("TRUNCATE path %s Physical inode %lu", path, pino);
         if (pino == 0)
                 return -sfs_errno;
         if (sfs_truncate(sfs_description, pino, length) != 0)
                 return -sfs_errno;
+        free(cpath);
         return 0;
 }
 

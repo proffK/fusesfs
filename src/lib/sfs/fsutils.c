@@ -77,7 +77,7 @@ static int read_file_entry(sfs_unit* fs, entry* entr,
         if (entr->entry_type != FILE_ENTRY) 
                 return 0;
 
-        SFS_TRACE("Cheking file %s in entry %lu", (char*) data, entry_off);
+        //SFS_TRACE("Cheking file %s in entry %lu", (char*) data, entry_off);
         cur = (char*) ((file_entry*) entr)->name;
 
         if (*curin == '\0') { 
@@ -165,7 +165,7 @@ static int read_dir_entry(sfs_unit* fs, entry* entr,
                         return 0;
                 return 1;
         }
-        SFS_TRACE("Cheking dir %s off %lu curin %d cur %d", (char*) data, entry_off, *curin, *cur);
+        //SFS_TRACE("Cheking dir %s off %lu curin %d cur %d", (char*) data, entry_off, *curin, *cur);
         while (*curin != '\0' && c != 0) {
                 if (*curin != *cur) return 0;
                 c--;
