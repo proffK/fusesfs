@@ -403,14 +403,73 @@ static int fuse_sfs_rmdir(const char* path)
         return 0;
 }
 
-//TODO
 static int fuse_sfs_rename(const char* from, const char* to)
 {
-        SFS_TRACE("%s", "");
+        SFS_TRACE("RENAME from %s to %s", from, to);
+        from++;
+        to++;
+        char* cpath_from = new_path(from);
+        char* cpath_to = new_path(to);
+        pino_t old_pino = 0;
+        pino_t pino = 0;
+        vino_t vino = 0;
+        sfs_attr attr; 
+        if ((old_pino = sfs_open(sfs_description, cpath_from)) == 0) {
+                free(cpath_from);
+                free(cpath_to);
+                return -sfs_errno;
+        }
+
+        if (sfs_getattr(sfs_description, old_pino, &attr) == -1) {
+                return -sfs_errno;
+        }
+
+        if (attr.type == DIR_ITER_TYPE) {
+                if (sfs_rmdir(sfs_description, cpath_from) == -1) {
+                        free(cpath_from);
+                        free(cpath_to);
+                        return -sfs_errno;
+                }
+                if (sfs_mkdir(sfs_description, cpath_to) == -1) {
+                        free(cpath_from);
+                        free(cpath_to);
+                        return -sfs_errno;
+                }
+                if ((pino = sfs_open(sfs_description, cpath_to)) == 0) {
+                        free(cpath_from);
+                        free(cpath_to);
+                        return -sfs_errno;
+                }
+        } else {
+
+                if ((pino = sfs_rename(sfs_description, old_pino, cpath_to)) == 0) {
+                        free(cpath_from);
+                        free(cpath_to);
+                        return -sfs_errno;
+                }
+        }
+
+        if (old_pino == pino) {
+                free(cpath_from);
+                free(cpath_to);
+                return 0;
+        }
+        if ((vino = get_vino(old_pino)) == 0) {
+                if ((vino = pino_add(pino)) == 0) {
+                        free(cpath_from);
+                        free(cpath_to);
+                        return -ENOMEM;
+                }
+                free(cpath_from);
+                free(cpath_to);
+                return 0;
+        }
+        set_pino(vino, pino);
+        free(cpath_from);
+        free(cpath_to);
         return 0;
 }
 
-//TODO
 static int fuse_sfs_read(const char* path, char *buf, size_t size, 
                          off_t offset, struct fuse_file_info* fi)
 {
@@ -543,6 +602,23 @@ static int fuse_sfs_releasedir(const char* path, struct fuse_file_info* fi)
        
 }
 
+static int fuse_sfs_statfs(const char* path, struct statvfs* stfs)
+{
+        SFS_TRACE("STATFS path %s", path);
+        stfs->f_bsize = 0;
+        stfs->f_frsize = 0;
+        stfs->f_blocks = 0;
+        stfs->f_bfree = 0;
+        stfs->f_bavail = 0;
+        stfs->f_files = 0;
+        stfs->f_ffree = 0;
+        stfs->f_favail = 0;
+        stfs->f_fsid = getpid();
+        stfs->f_flag = 0;
+        stfs->f_namemax = PATH_MAX;
+        return 0;
+}
+
 static struct fuse_operations sfs_oper = {
         .init           = fuse_sfs_init,   
         .destroy        = fuse_sfs_destroy,
@@ -556,7 +632,7 @@ static struct fuse_operations sfs_oper = {
         .chmod          = fuse_sfs_chmod,
         .chown          = fuse_sfs_chown,
         .utime          = fuse_sfs_utime,
-        //.rename         = fuse_sfs_rename, 
+        .rename         = fuse_sfs_rename, 
         .read           = fuse_sfs_read,
         .write          = fuse_sfs_write,
         .truncate       = fuse_sfs_truncate,
@@ -564,7 +640,8 @@ static struct fuse_operations sfs_oper = {
         .release        = fuse_sfs_release,
         .ftruncate      = fuse_sfs_ftruncate,
         .opendir        = fuse_sfs_opendir,
-        .releasedir     = fuse_sfs_releasedir
+        .releasedir     = fuse_sfs_releasedir,
+        .statfs         = fuse_sfs_statfs
 };
 
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */

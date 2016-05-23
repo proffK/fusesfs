@@ -34,7 +34,8 @@ int sfs_rmdir(sfs_unit* fs, const char* dirpath)
 
         if (off != start) {
                 SFS_TRACE("Dir isn't empty");
-                SET_ERRNO(EINVAL);
+                SET_ERRNO(ENOTEMPTY);
+                return -1;
         }
 
         off += INDEX_ENTRY_SIZE;
@@ -43,7 +44,8 @@ int sfs_rmdir(sfs_unit* fs, const char* dirpath)
 
         if (off != 0) {
                 SFS_TRACE("Dir isn't empty");
-                SET_ERRNO(EINVAL);
+                SET_ERRNO(ENOTEMPTY);
+                return -1;
         }
         
         start = search_dir(fs, (char*) dirpath, &entr);
