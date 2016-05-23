@@ -59,6 +59,10 @@ off_t sfs_rename(sfs_unit* fs, off_t file, const char* newpath)
         }
         SFS_TRACE("Start: %lX %s %d", new_off, newpath, n);
 
+        if (read_entry(fs->bdev, new_off, &entr) == -1) {
+                return 0;
+        }
+
         if (n == 1) {
                 strcpy((char*) AS_FILE(&entr)->name, newpath);
         } else {
@@ -68,6 +72,10 @@ off_t sfs_rename(sfs_unit* fs, off_t file, const char* newpath)
                 newpath += FIRST_FILE_NAME_SIZE;
         }
         n--;
+        
+        if (write_entry(fs->bdev, new_off, &entr) == -1) {
+                return 0;
+        }
 
         if (read_entry(fs->bdev, file, &entr) == -1) {
                 return 0;
