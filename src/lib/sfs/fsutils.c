@@ -586,7 +586,7 @@ int del_file_list_add(sfs_unit* fs, entry* entr, uint64_t start, uint64_t end)
                                 PREV_DEL(entr),
                                 NEXT_DEL(entr));
 
-                if (off != 0) {
+                if (fs->del_begin != 0) {
                         read_entry(fs->bdev, fs->del_begin, entr);
                         PREV_DEL(entr) = new;
                         write_entry(fs->bdev, fs->del_begin, entr);
