@@ -63,16 +63,7 @@ off_t sfs_rename(sfs_unit* fs, off_t file, const char* newpath)
                 return 0;
         }
 
-        if (n == 1) {
-                strcpy((char*) AS_FILE(&entr)->name, newpath);
-        } else {
-                memcpy(AS_FILE(&entr)->name, (uint8_t*) newpath, 
-                       FIRST_FILE_NAME_SIZE);
-                len -= FIRST_FILE_NAME_SIZE;
-                newpath += FIRST_FILE_NAME_SIZE;
-        }
-        n--;
-        
+       
         if (write_entry(fs->bdev, new_off, &entr) == -1) {
                 return 0;
         }
@@ -99,11 +90,19 @@ off_t sfs_rename(sfs_unit* fs, off_t file, const char* newpath)
         AS_FILE(&entr)->start_block = start;
         AS_FILE(&entr)->end_block = end;
         AS_FILE(&entr)->entry_type = FILE_ENTRY;
+        n--;
         AS_FILE(&entr)->cont_entries = n;
-        write_entry(fs->bdev, new_off, &entr);
         cur = new_off;
         cur += INDEX_ENTRY_SIZE;
-
+        if (n == 0) {
+                strcpy((char*) AS_FILE(&entr)->name, newpath);
+        } else {
+                memcpy(AS_FILE(&entr)->name, (uint8_t*) newpath, 
+                       FIRST_FILE_NAME_SIZE);
+                len -= FIRST_FILE_NAME_SIZE;
+                newpath += FIRST_FILE_NAME_SIZE;
+        }
+        write_entry(fs->bdev, new_off, &entr);
         while (n--) {
                 SFS_TRACE("Write cont entry %s", newpath);
                 strncpy((char*) &entr, newpath, INDEX_ENTRY_SIZE);
