@@ -17,6 +17,8 @@
 
 #include <sfs/unit.h>
 #include <sfs/debug.h>
+#include <sfs/statfs.h>
+#include <sfs/fixfs.h>
 #include <bdev/filedev.h>
 #include <sfs/mbr.h>
 #include <fuse/inode.h>
@@ -39,11 +41,11 @@ extern inode_map_t* inode_map;
 /*
  * Semaphores functions
  */
-#define ADD_OPER(num, sem, oper, flags) ({  \
+#define ADD_OPER(num, sem, oper, flags) do {  \
     sem_ops[num].sem_num = (sem);           \
     sem_ops[num].sem_op = (oper);           \
     sem_ops[num].sem_flg = (flags);         \
-})
+} while(0)
 
 #define DO_OPER(num)                        \
     (semop(semaphores, sem_ops, (num))) 
@@ -121,6 +123,12 @@ static void* fuse_sfs_init()
         uint64_t bs = 0;
         uint64_t file_size = 0;
         struct stat dstat;
+        struct mbr_t mbr;
+        entry entr;
+        char Answer = '\0';
+        size_t data_size = 0;
+        size_t free_size = 0;
+        size_t used_size = 0;
         blockdev* bdev = malloc(sizeof(blockdev));
         filedev_data* fdev = malloc(sizeof(filedev_data));
         sfs_description = malloc(sizeof(sfs_unit));
@@ -181,12 +189,66 @@ static void* fuse_sfs_init()
                 exit(EXIT_FAILURE);
         }
 
-        if (dstat.st_mtime - sfs_description->time <= 1)
+        if (dstat.st_mtime - sfs_description->time <= 1) {
                 fprintf(stderr, "Modification time and timestamp are differ\n"
                                 "WE DON'T GIVE ANY WARRANTY!\n");
+                while (Answer != 'Y' && Answer != 'n') {
+                        fprintf(stderr, "Do you want to continue?\n"
+                                        "Press [y/N]\n"
+                                        "WE DON'T GIVE ANY WARRANTY!\n");
+                        Answer = getchar();
+                }
+                if (Answer == 'n') {
+                        bdev->release(bdev);
+                        free(bdev->dev_data);
+                        free(bdev);
+                        free(sfs_description);
+                        exit(EXIT_FAILURE);
+                }
+        }
         else
                 fprintf(stderr, "Modification time and timestamp "
                                 "are equal\n");
+
+        read_data(sfs_description->bdev, 0, (uint8_t*) &mbr, 
+                  sizeof(struct mbr_t));
+
+        data_size = mbr.data_area_size * sfs_description->bdev->block_size;
+        free_size = scan_del_file_list(sfs_description, &entr);
+        if (free_size == -1) {
+                fprintf(stderr, "Allocation of free space was completly broken\n"
+                                "Filesystem cannot be mounted\n");
+                bdev->release(bdev);
+                free(bdev->dev_data);
+                free(bdev);
+                free(sfs_description);
+                exit(EXIT_FAILURE);
+        }
+ 
+        used_size = scan_used_space(sfs_description, &entr);
+        
+        if (data_size != free_size + used_size) {
+                fprintf(stderr, "Allocation of free space was broken\n"
+                                "free size = %lu\n"
+                                "used size = %lu\n"
+                                "data size = %lu\n", free_size, used_size,
+                                                     data_size);
+                while (Answer != 'y' && Answer != 'N') {
+                        fprintf(stderr, "Do you want to continue?\n"
+                                        "Press [y/N]\n"
+                                        "WE DON'T GIVE ANY WARRANTY!\n");
+                        Answer = getchar();
+                }
+                if (Answer == 'N') {
+                        bdev->release(bdev);
+                        free(bdev->dev_data);
+                        free(bdev);
+                        free(sfs_description);
+                        exit(EXIT_FAILURE);
+                }
+        }
+        fix_non_del_file(sfs_description, &entr);
+ 
         /* 
          * Create inode container
          */
@@ -605,15 +667,20 @@ static int fuse_sfs_releasedir(const char* path, struct fuse_file_info* fi)
 static int fuse_sfs_statfs(const char* path, struct statvfs* stfs)
 {
         SFS_TRACE("STATFS path %s", path);
-        stfs->f_bsize = 0;
-        stfs->f_frsize = 0;
-        stfs->f_blocks = 0;
-        stfs->f_bfree = 0;
-        stfs->f_bavail = 0;
-        stfs->f_files = 0;
-        stfs->f_ffree = 0;
-        stfs->f_favail = 0;
-        stfs->f_fsid = getpid();
+        entry entr;
+        struct mbr_t mbr;
+        read_data(sfs_description->bdev, 0, (uint8_t*) &mbr, sizeof(struct mbr_t));
+
+        stfs->f_bsize = sfs_description->bdev->block_size;
+        stfs->f_frsize = stfs->f_bsize;
+        stfs->f_blocks = mbr.data_area_size;
+        stfs->f_bfree = scan_del_file_list(sfs_description, &entr)
+                        / stfs->f_bsize;
+        stfs->f_bavail = stfs->f_bfree;
+        stfs->f_files = mbr.index_area_size / INDEX_ENTRY_SIZE;
+        stfs->f_ffree = scan_free_inode(sfs_description, &entr);
+        stfs->f_favail = stfs->f_ffree;
+        stfs->f_fsid = *(mbr.magic_number);
         stfs->f_flag = 0;
         stfs->f_namemax = PATH_MAX;
         return 0;

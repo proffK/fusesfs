@@ -238,7 +238,7 @@ off_t search_file(sfs_unit* fs, char* filepath, entry* entr)
         if ((start_off = entry_parse(fs, entr, 
                                     read_file_entry, filepath)) == 0) {
                 SFS_TRACE("Didn't found file %s", filepath);
-                return 0;
+                return 0;(const char*) 
         }
 
         if ((n = ((file_entry*) entr)->cont_entries) == 0) {
@@ -454,18 +454,6 @@ int read_dir_name(sfs_unit* fs, dir_entry* entr,
 #define AS_FILE(entr) ((file_entry*) entr)
 #define AS_DFILE(entr) ((del_file_entry*) entr)
 
-static off_t del_next(sfs_unit* fs, entry* entr)
-{
-        off_t ret = NEXT_DEL(entr);
-        if (ret == 0) {
-                return 0;
-        }
-        if (read_entry(fs->bdev, ret, entr) == -1) {
-                return (off_t) -1;
-        }
-        return ret;
-}
-
 static int del_file_list_remove(sfs_unit* fs, off_t off, entry* entr)
 {
         off_t next = 0;
@@ -594,12 +582,6 @@ int del_file_list_add(sfs_unit* fs, entry* entr, uint64_t start, uint64_t end)
                 fs->del_begin = new;
         }
         return 0;
-}
-
-static inline size_t get_size(sfs_unit* fs, entry* entr) 
-{
-        return fs->bdev->block_size * ((AS_DFILE(entr)->end_block) - 
-                AS_DFILE(entr)->start_block + 1);
 }
 
 off_t del_file_list_alloc(sfs_unit* fs, entry* entr, size_t size)

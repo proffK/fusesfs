@@ -53,6 +53,11 @@ off_t sfs_rename(sfs_unit* fs, off_t file, const char* newpath)
         memset(&entr, 0, INDEX_ENTRY_SIZE);
         n = count_entry(len);
 
+        if (entr.entry_type != FILE_ENTRY) {
+                SET_ERRNO(EINVAL);
+                return 0;
+        }
+
         if ((new_off = alloc_entry(fs, &entr, n)) == 0) {
                 SFS_TRACE("Not enough space for file %s %d", newpath, n);
                 return 0;

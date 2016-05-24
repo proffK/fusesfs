@@ -4,6 +4,7 @@
 #include <sfs/entry.h>
 #include <sfs/unit.h>
 
+#define AS_DFILE(entr) ((del_file_entry*) (entr))
 off_t search_file(sfs_unit* fs, char* filepath, entry* entr);
 
 off_t search_dir(sfs_unit* fs, char* filepath, entry* entr);
@@ -33,7 +34,26 @@ static inline size_t get_real_size(sfs_unit* fs, size_t size)
                         !!(size % fs->bdev->block_size));
 }
 
+static inline size_t get_size(sfs_unit* fs, entry* entr) 
+{
+        return fs->bdev->block_size * ((AS_DFILE(entr)->end_block) - 
+                AS_DFILE(entr)->start_block + 1);
+}
+
 #define NEXT_DEL(entr) AS_DFILE(entr)->size
 #define PREV_DEL(entr) AS_DFILE(entr)->time_stamp
 
+static inline off_t del_next(sfs_unit* fs, entry* entr)
+{
+        off_t ret = NEXT_DEL(entr);
+        if (ret == 0) {
+                return 0;
+        }
+        if (read_entry(fs->bdev, ret, entr) == -1) {
+                return (off_t) -1;
+        }
+        return ret;
+}
+
+#undef AS_DFILE
 #endif
