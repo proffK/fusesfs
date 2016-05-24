@@ -57,6 +57,7 @@ ssize_t sfs_write(sfs_unit* fs, off_t file,
                 if ((new_start = del_file_list_alloc(fs, &entr, new_size))
                                         == 0) {
                         SFS_TRACE("Can't alloc space");
+                        SET_ERRNO(ENOSPC);
                         return -1;
                 }
                 new_end = new_start + (get_real_size(fs, new_size) 
@@ -67,6 +68,7 @@ ssize_t sfs_write(sfs_unit* fs, off_t file,
                         if (copy_block(fs->bdev, old_start, new_start, 
                                        old_end - old_start + 1) != 0) {
                                 SFS_TRACE("Can't copy blocks");
+                                SET_ERRNO(EIO);
                                 return -1;
                         }
                 }

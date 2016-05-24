@@ -91,10 +91,9 @@ int sfs_init(sfs_unit* fs, blockdev* bdev)
         if (zero_folder_entry != DIR_ENTRY)
                 return -1;
 
-        if ((fs->del_begin = entry_parse(fs, &entr, search_begin, NULL)) == 0)
-                return -1;
+        fs->del_begin = entry_parse(fs, &entr, search_begin, NULL);
 
-        /* Read last modification time */ 
+        /* Read zero dir name */ 
         if (read_data(bdev, fs->entry_start + 2*INDEX_ENTRY_SIZE +
                       offsetof(dir_entry, dir_name), &zero_folder_entry,
                       sizeof(zero_folder_entry)) == -1)
@@ -102,13 +101,16 @@ int sfs_init(sfs_unit* fs, blockdev* bdev)
         if (zero_folder_entry != 0)
                 return -1; 
         /* Read timestamp */
+        fprintf(stderr, "Time offset: %lu\n", offsetof(vol_ident_entry, 
+                                time_stamp) +
+                        fs->vol_ident);
         if (read_data(bdev, offsetof(vol_ident_entry, time_stamp) + 
-                            fs->entry_start, (uint8_t*)&(fs->time), 
+                            fs->vol_ident, (uint8_t*)&(fs->time), 
                             sizeof(fs->time)) == -1)
                 return -1;
         /* Write zero to time stamp */
         if (write_data(bdev, offsetof(vol_ident_entry, time_stamp) + 
-                             fs->entry_start, (uint8_t*)&(new_timestamp), 
+                             fs->vol_ident, (uint8_t*)&(new_timestamp), 
                              sizeof(new_timestamp)) == -1) {
                 return -1;
         }

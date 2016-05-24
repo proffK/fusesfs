@@ -23,11 +23,6 @@
 #include <sfs/mbr.h>
 #include <fuse/inode.h>
 
-enum err_code {
-        SFS_INVAL = 1,
-        SFS_ENOMEM
-};
-
 extern int sfs_errno;
 extern inode_map_t* inode_map;
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
@@ -136,12 +131,23 @@ static void* fuse_sfs_init()
          * Try to recognize block_size
          */
         int temp_fd = open(imagefile, O_RDONLY);
-        fstat(temp_fd, &dstat); 
+        fstat(temp_fd, &dstat);
+        if (!(dstat.st_mode & S_IFBLK) &&
+            !(dstat.st_mode & S_IFREG)) {
+                fprintf(stderr, "Image is not a regular "
+                                "file or block device!\n");
+                close(temp_fd);
+                free(fdev);
+                free(bdev);
+                free(sfs_description);
+                exit(EXIT_FAILURE);
+        }
+
         lseek(temp_fd, offsetof(struct mbr_t, block_size), SEEK_SET);
         if (read(temp_fd, &bs_p2, 1) == 0) {
                 perror("");
                 close(temp_fd);
-                free(bdev->dev_data);
+                free(fdev);
                 free(bdev);
                 free(sfs_description);
                 exit(EXIT_FAILURE);
@@ -189,13 +195,15 @@ static void* fuse_sfs_init()
                 exit(EXIT_FAILURE);
         }
 
-        if (dstat.st_mtime - sfs_description->time <= 1) {
+        if (dstat.st_mtime - sfs_description->time > 1) {
                 fprintf(stderr, "Modification time and timestamp are differ\n"
                                 "WE DON'T GIVE ANY WARRANTY!\n");
+                fprintf(stderr, "ha mtime %lu time %lu", 
+                                dstat.st_mtime,
+                                sfs_description->time);
                 while (Answer != 'Y' && Answer != 'n') {
                         fprintf(stderr, "Do you want to continue?\n"
-                                        "Press [y/N]\n"
-                                        "WE DON'T GIVE ANY WARRANTY!\n");
+                                        "Press [Y/n]\n");
                         Answer = getchar();
                 }
                 if (Answer == 'n') {
@@ -216,7 +224,8 @@ static void* fuse_sfs_init()
         data_size = mbr.data_area_size * sfs_description->bdev->block_size;
         free_size = scan_del_file_list(sfs_description, &entr);
         if (free_size == -1) {
-                fprintf(stderr, "Allocation of free space was completly broken\n"
+                fprintf(stderr, "Allocation of free space was " 
+                                "completly broken\n"
                                 "Filesystem cannot be mounted\n");
                 bdev->release(bdev);
                 free(bdev->dev_data);
@@ -235,8 +244,8 @@ static void* fuse_sfs_init()
                                                      data_size);
                 while (Answer != 'y' && Answer != 'N') {
                         fprintf(stderr, "Do you want to continue?\n"
-                                        "Press [y/N]\n"
-                                        "WE DON'T GIVE ANY WARRANTY!\n");
+                                        "WE DON'T GIVE ANY WARRANTY!\n"
+                                        "Press [y/N]\n");
                         Answer = getchar();
                 }
                 if (Answer == 'N') {
@@ -299,6 +308,8 @@ static int fuse_sfs_getattr(const char* path, struct stat *stbuf)
         stbuf->st_ino  = vino;
         stbuf->st_size = attr.size;
         stbuf->st_mtime = attr.time;
+        stbuf->st_atime = attr.time;
+        stbuf->st_ctime = attr.time;
         if (attr.type == FILE_ITER_TYPE)
                 stbuf->st_mode = S_IFREG;
         if (attr.type == DIR_ITER_TYPE)
@@ -504,7 +515,8 @@ static int fuse_sfs_rename(const char* from, const char* to)
                 }
         } else {
 
-                if ((pino = sfs_rename(sfs_description, old_pino, cpath_to)) == 0) {
+                if ((pino = sfs_rename(sfs_description, old_pino, 
+                                       cpath_to)) == 0) {
                         free(cpath_from);
                         free(cpath_to);
                         return -sfs_errno;
@@ -539,7 +551,7 @@ static int fuse_sfs_read(const char* path, char *buf, size_t size,
                   path, fi->fh, get_pino(fi->fh));
         int num_byte = 0;
         if ((num_byte = sfs_read(sfs_description, get_pino(fi->fh), 
-                                 buf, size, offset)) == 0) {
+                                 buf, size, offset)) == -1) {
                return -sfs_errno;
         } 
         return num_byte;
@@ -552,8 +564,9 @@ static int fuse_sfs_write(const char* path, const char *buf, size_t size,
                   path, fi->fh, get_pino(fi->fh));
         int num_byte = 0;
         if ((num_byte = sfs_write(sfs_description, get_pino(fi->fh),
-                             (char*)buf, size, offset)) == 0) {
-                return -sfs_errno;
+                             (char*)buf, size, offset)) == -1) {
+                fprintf(stderr, "WRITE ERROR %d\n", sfs_errno);
+                return (-1)*sfs_errno;
         }
         return num_byte;
 }
