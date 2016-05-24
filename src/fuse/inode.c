@@ -60,6 +60,11 @@ int inode_map_create(void)
 
 int inode_map_delete(void) 
 {
+        long i = 0;
+        for (i = 1; i < inode_map->max_vino; i++) {
+                inode_lock_destroy(i);
+        }
+        inode_map_lock_destroy();
         free(inode_map->inode_table);
         free(inode_map);
         return 0;

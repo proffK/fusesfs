@@ -289,6 +289,15 @@ static void* fuse_sfs_init()
                 free(sfs_description);
                 exit(EXIT_FAILURE);
         }
+        if (index_lock_init() == -1) {
+                inode_map_delete();
+                sfs_release(sfs_description);
+                sfs_description->bdev->release(sfs_description->bdev);
+                free(sfs_description->bdev->dev_data);
+                free(sfs_description->bdev);
+                free(sfs_description);
+                exit(EXIT_FAILURE);
+        }
 
         SFS_TRACE("Init finished");
         return NULL;
@@ -314,6 +323,7 @@ static int fuse_sfs_getattr(const char* path, struct stat *stbuf)
         vino_t vino;
         sfs_attr attr;
         pino_t pino;
+        index_rdlock();
         if ((pino = sfs_open(sfs_description, cpath)) == 0)
                 return -sfs_errno;
         if ((vino = get_vino(pino)) == 0) {
@@ -801,13 +811,13 @@ int main(int argc, char* argv[]) {
          * Expand options for sending to FUSE
          */
         char** nargv = (char**) malloc((NUM_OF_FUSE_OPTIONS) * sizeof(char*));
-        int nargc = NUM_OF_FUSE_OPTIONS;
+        int nargc = NUM_OF_FUSE_OPTIONS - 1;
         nargv[0] = argv[0];
         nargv[1] = argv[optind + 1];
         /* Disabling multi-threads operation helps to avoid race condition */
-        nargv[2] = "-s";
+        nargv[2] = "-d";
         /* Enable foreground mode for saving value of semaphores */
-        nargv[3] = "-d";
+        //nargv[3] = " ";
         imagefile = argv[optind];
         /*
          * Call FUSE
