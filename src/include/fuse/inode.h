@@ -2,6 +2,7 @@
 #define INODE_H
 #include <stdint.h>
 #include <stddef.h>
+#include <pthread.h>
 
 typedef uint64_t vino_t;
 typedef uint64_t pino_t;
@@ -14,12 +15,14 @@ typedef struct {
         pino_t pino;
         int dirty;
         int openbit;
+        pthread_rwlock_t lock;
 } file_t;
 
 typedef struct  {
         /* Max current virtual inode */
         vino_t max_vino;
         size_t c_size;
+        pthread_rwlock_t lock;
         file_t* inode_table;
 } inode_map_t;
 
@@ -112,5 +115,39 @@ int vino_dump(vino_t vino);
  */
 int inode_map_dump(void);
 
+/*
+ * RW lock for locking inode map
+ */
+static inline void inode_map_rdlock() 
+{
+        pthread_rwlock_rdlock(&(inode_map->lock));
+}
+
+static inline void inode_map_wrlock() 
+{
+        pthread_rwlock_wrlock(&(inode_map->lock));
+}
+
+static inline void inode_map_unlock() 
+{
+        pthread_rwlock_unlock(&(inode_map->lock));
+}
+/*
+ * RW lock for locking inode
+ */
+static inline void inode_rdlock(vino_t vino) 
+{
+        pthread_rwlock_rdlock(&(inode_map->inode_table[vino].lock));
+}
+
+static inline void inode_wrlock(vino_t vino) 
+{
+        pthread_rwlock_wrlock(&(inode_map->inode_table[vino].lock));
+}
+
+static inline void inode_unlock(vino_t vino) 
+{
+        pthread_rwlock_unlock(&(inode_map->inode_table[vino].lock));
+}
 
 #endif

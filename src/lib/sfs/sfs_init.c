@@ -101,9 +101,6 @@ int sfs_init(sfs_unit* fs, blockdev* bdev)
         if (zero_folder_entry != 0)
                 return -1; 
         /* Read timestamp */
-        fprintf(stderr, "Time offset: %lu\n", offsetof(vol_ident_entry, 
-                                time_stamp) +
-                        fs->vol_ident);
         if (read_data(bdev, offsetof(vol_ident_entry, time_stamp) + 
                             fs->vol_ident, (uint8_t*)&(fs->time), 
                             sizeof(fs->time)) == -1)

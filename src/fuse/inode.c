@@ -1,8 +1,29 @@
 #include <fuse/inode.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <pthread.h>
 
 inode_map_t* inode_map = NULL;
+
+static int inode_lock_init(vino_t vino) 
+{
+        return pthread_rwlock_init(&(inode_map->inode_table[vino].lock), NULL); 
+}
+
+static int inode_lock_destroy(vino_t vino) 
+{
+        return pthread_rwlock_destroy(&(inode_map->inode_table[vino].lock)); 
+}
+
+static int inode_map_lock_init() 
+{
+        return pthread_rwlock_init(&(inode_map->lock), NULL); 
+}
+
+static int inode_map_lock_destroy() 
+{
+        return pthread_rwlock_destroy(&(inode_map->lock)); 
+}
 
 static int inode_map_resize(void) 
 { 
@@ -30,6 +51,10 @@ int inode_map_create(void)
                 return -1;
         }
         inode_map->c_size = INODE_MAP_DEFAULT_SIZE;
+
+        if (inode_map_lock_init() == -1)
+                return -1;
+
         return 0;
 }
 
@@ -48,6 +73,8 @@ vino_t pino_add(pino_t pino)
         inode_map->inode_table[inode_map->max_vino].pino = pino;
         inode_map->inode_table[inode_map->max_vino].dirty = 0; 
         inode_map->inode_table[inode_map->max_vino].openbit = 0;
+        if (inode_lock_init(inode_map->max_vino) == -1)
+                return -1;
 
         (inode_map->max_vino)++;
         return inode_map->max_vino - 1;

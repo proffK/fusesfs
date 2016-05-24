@@ -8,6 +8,7 @@
 #define FUSE_USE_VERSION 25
 #include <fuse.h>
 #include <errno.h>
+#include <pthread.h>
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -25,6 +26,7 @@
 
 extern int sfs_errno;
 extern inode_map_t* inode_map;
+static pthread_rwlock_t index_lock;
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 /* +++++++++++++++++++++++++++++ Semaphores ++++++++++++++++++++++++++++++++ */
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
@@ -66,6 +68,24 @@ sfs_unit* sfs_description = NULL;
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 /* +++++++++++++++++++++++++++++++ Functions +++++++++++++++++++++++++++++++ */
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
+static inline int index_lock_init() {
+        return pthread_rwlock_init(&(index_lock), NULL); 
+}
+static inline void index_rdlock() {
+        pthread_rwlock_rdlock(&(index_lock));
+}
+static inline void index_wrlock() {
+        pthread_rwlock_wrlock(&(index_lock));
+}
+static inline void index_unlock() {
+        pthread_rwlock_unlock(&(index_lock));
+}
+static inline int index_lock_destroy() {
+        return pthread_rwlock_destroy(&index_lock);
+}
+/* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
+
 static void usage(unsigned status) 
 {
         if (status != EXIT_SUCCESS) 
