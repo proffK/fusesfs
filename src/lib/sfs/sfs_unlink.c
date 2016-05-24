@@ -31,6 +31,7 @@ off_t sfs_unlink(sfs_unit* fs, const char* filepath)
         write_entry(fs->bdev, start, &entr);
 
         update(fs);
+        SET_ERRNO(0);
         return start;
 }
 

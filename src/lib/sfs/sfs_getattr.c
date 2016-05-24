@@ -27,6 +27,6 @@ int sfs_getattr(sfs_unit* fs, off_t file, sfs_attr* attr)
                 attr->size = 0;
                 attr->off = file;
         }
-
+        SET_ERRNO(0);
         return 0;
 }

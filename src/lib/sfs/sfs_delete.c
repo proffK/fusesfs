@@ -34,6 +34,7 @@ int sfs_delete(sfs_unit* fs, off_t file)
         del_file_list_add(fs, &entr, start_block, end_block);
 
         update(fs);
+        SET_ERRNO(0);
         return 0;
 }
 

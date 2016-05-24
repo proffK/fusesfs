@@ -26,16 +26,19 @@ int sfs_mkdir(sfs_unit* fs, const char* dirpath)
 
         if (is_correct_dirpath(dirpath) != 0) {
                 SFS_TRACE("Incorrect dirname %s", dirpath);
+                SET_ERRNO(EINVAL);
                 return -1;
         }
         
         if (check_dirs(fs, (char*) dirpath, &entr) != 0) {
                 SFS_TRACE("File dirs %s exist. Offset: %lu", dirpath, start);
+                SET_ERRNO(EEXIST);
                 return -1;
         }
  
         if ((start = search_dir(fs, (char*) dirpath, &entr)) != 0) {
                 SFS_TRACE("Dir %s exist. Offset: %lu", dirpath, start);
+                SET_ERRNO(EEXIST);
                 return -1;
         }
 
@@ -45,6 +48,7 @@ int sfs_mkdir(sfs_unit* fs, const char* dirpath)
 
         if ((start = alloc_entry(fs, &entr, n)) == 0) {
                 SFS_TRACE("Not enough space for dir %s", dirpath);
+                SET_ERRNO(ENOSPC);
                 return -1;
         }
 
@@ -73,6 +77,7 @@ int sfs_mkdir(sfs_unit* fs, const char* dirpath)
         }
 
         update(fs);
+        SET_ERRNO(0);
         return 0;
 }
 

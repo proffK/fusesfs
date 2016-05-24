@@ -29,11 +29,13 @@ int sfs_readdir(sfs_unit* fs, diriter* iter)
 
         if (is_correct_filepath(name) != 0) {
                 SFS_TRACE("Incorrect dirname %s", name);
+                SET_ERRNO(EINVAL);
                 return -1;
         }
 
         if (search_dir(fs, name, &entr) == 0) {
                 SFS_TRACE("Dir %s not exist.", name);
+                SET_ERRNO(ENOENT);
                 return -1;
         }
 
@@ -104,5 +106,6 @@ RESTART:
         }
         
         SFS_TRACE("searched file mask %s", name);
+        SET_ERRNO(0);
         return 0;
 }

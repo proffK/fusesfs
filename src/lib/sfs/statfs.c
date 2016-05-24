@@ -32,6 +32,7 @@ size_t scan_del_file_list(sfs_unit* fs, entry* entr)
                 SET_ERRNO(ETIMEDOUT);
                 return -1;
         }
+        SET_ERRNO(0);
         return cur_size;
 }
 

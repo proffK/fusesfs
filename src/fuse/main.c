@@ -9,6 +9,8 @@
 #include <fuse.h>
 #include <errno.h>
 #include <pthread.h>
+#include <locale.h>
+#include <langinfo.h>
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -245,7 +247,7 @@ static void* fuse_sfs_init()
         free_size = scan_del_file_list(sfs_description, &entr);
         if (free_size == -1) {
                 fprintf(stderr, "Allocation of free space was " 
-                                "completly broken\n"
+                                "completely broken\n"
                                 "Filesystem cannot be mounted\n");
                 bdev->release(bdev);
                 free(bdev->dev_data);
@@ -323,7 +325,7 @@ static int fuse_sfs_getattr(const char* path, struct stat *stbuf)
         vino_t vino;
         sfs_attr attr;
         pino_t pino;
-        index_rdlock();
+        //index_rdlock();
         if ((pino = sfs_open(sfs_description, cpath)) == 0)
                 return -sfs_errno;
         if ((vino = get_vino(pino)) == 0) {
@@ -333,7 +335,7 @@ static int fuse_sfs_getattr(const char* path, struct stat *stbuf)
                 }
         }
         if (sfs_getattr(sfs_description, pino, &attr) != 0)
-                return -ENOENT;
+                return -sfs_errno;
         stbuf->st_dev  = getpid();
         stbuf->st_ino  = vino;
         stbuf->st_size = attr.size;
@@ -456,7 +458,7 @@ static int fuse_sfs_mkdir(const char* path, mode_t mode)
         char* cpath = new_path(path);
         if (sfs_mkdir(sfs_description, cpath) == -1) {
                 free(cpath);
-                return -EEXIST;
+                return -sfs_errno;
         }
         free(cpath);
         return 0;
@@ -611,11 +613,11 @@ static int fuse_sfs_mknod(const char* path, mode_t mode, dev_t rdev)
 
         if (mode & S_IFREG && sfs_creat(sfs_description, cpath) == -1) {
                 free(cpath);
-                return -ENOMEM;
+                return -sfs_errno;
         }
         if (mode & S_IFDIR && sfs_creat(sfs_description, cpath) == -1) {
                 free(cpath);
-                return -ENOMEM;
+                return -sfs_errno;
         }
         free(cpath);
         return 0;
@@ -761,6 +763,7 @@ static struct fuse_operations sfs_oper = {
 int main(int argc, char* argv[]) {
         int image_fd = 0;
         struct stat st;
+        setlocale(LC_ALL, "");
         /*
          * Read option 
          */
@@ -811,13 +814,13 @@ int main(int argc, char* argv[]) {
          * Expand options for sending to FUSE
          */
         char** nargv = (char**) malloc((NUM_OF_FUSE_OPTIONS) * sizeof(char*));
-        int nargc = NUM_OF_FUSE_OPTIONS - 1;
+        int nargc = NUM_OF_FUSE_OPTIONS;
         nargv[0] = argv[0];
         nargv[1] = argv[optind + 1];
         /* Disabling multi-threads operation helps to avoid race condition */
-        nargv[2] = "-d";
+        nargv[2] = "-s";
         /* Enable foreground mode for saving value of semaphores */
-        //nargv[3] = " ";
+        nargv[3] = "-d";
         imagefile = argv[optind];
         /*
          * Call FUSE

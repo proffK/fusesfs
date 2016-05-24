@@ -37,6 +37,7 @@ int sfs_init(sfs_unit* fs, blockdev* bdev)
         uint8_t zero_folder_entry = 0;
         entry entr;
         SFS_TRACE("Read MBR fields from image");
+        SET_ERRNO(EIO);
         /* Read data_area_size */ 
         if (read_data(bdev, offsetof(struct mbr_t, data_area_size), 
                   (uint8_t*)(&data_area_size), sizeof(data_area_size)) == -1)
@@ -70,11 +71,14 @@ int sfs_init(sfs_unit* fs, blockdev* bdev)
         if (read_data(bdev, offsetof(struct mbr_t, block_size),
                   (uint8_t*)(&b_size_p2), sizeof(b_size_p2)) == -1)
                 return -1;
+        SET_ERRNO(0);
         /* Check checksum :) */
         /* Do you speak GNU/Linux or Linux? You should respect Stallman */
         if (checksum != calc_checksum(magic_number, &sfs_v, &total_size,
-                                      &reserved_size, &b_size_p2))              
+                                      &reserved_size, &b_size_p2)) {
+                SET_ERRNO(EINVAL);             
                 return -1;
+        }
         SFS_TRACE("Calculate all sizes");
         block_size <<= b_size_p2;
         SFS_TRACE("Block size: %lu", block_size);
@@ -86,30 +90,42 @@ int sfs_init(sfs_unit* fs, blockdev* bdev)
         fs->bdev = bdev;
         /* Try to recognize zero folder */
         if (read_data(bdev, fs->entry_start + 2*INDEX_ENTRY_SIZE, 
-                      &zero_folder_entry, sizeof(zero_folder_entry)) == -1)
+                      &zero_folder_entry, sizeof(zero_folder_entry)) == -1) {
+                SET_ERRNO(EINVAL);
                 return -1;
-        if (zero_folder_entry != DIR_ENTRY)
+        }
+        if (zero_folder_entry != DIR_ENTRY) {
+                SET_ERRNO(EINVAL);
                 return -1;
+        }
 
         fs->del_begin = entry_parse(fs, &entr, search_begin, NULL);
 
         /* Read zero dir name */ 
         if (read_data(bdev, fs->entry_start + 2*INDEX_ENTRY_SIZE +
                       offsetof(dir_entry, dir_name), &zero_folder_entry,
-                      sizeof(zero_folder_entry)) == -1)
+                      sizeof(zero_folder_entry)) == -1) {
+                SET_ERRNO(EINVAL);
                 return -1;
-        if (zero_folder_entry != 0)
-                return -1; 
+        }
+        if (zero_folder_entry != 0) {
+                SET_ERRNO(EINVAL);
+                return -1;
+        } 
         /* Read timestamp */
         if (read_data(bdev, offsetof(vol_ident_entry, time_stamp) + 
                             fs->vol_ident, (uint8_t*)&(fs->time), 
-                            sizeof(fs->time)) == -1)
+                            sizeof(fs->time)) == -1) {
+                SET_ERRNO(EIO);
                 return -1;
+        }
         /* Write zero to time stamp */
         if (write_data(bdev, offsetof(vol_ident_entry, time_stamp) + 
                              fs->vol_ident, (uint8_t*)&(new_timestamp), 
                              sizeof(new_timestamp)) == -1) {
+                SET_ERRNO(EIO);
                 return -1;
         }
+        SET_ERRNO(0);
         return 0;
 }

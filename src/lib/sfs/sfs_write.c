@@ -82,6 +82,7 @@ END:
         write_entry(fs->bdev, file, &entr);
  
         update(fs);
+        SET_ERRNO(0);
         return write_data(fs->bdev, new_start * fs->bdev->block_size + off,
                           (uint8_t*) data, size);
 }

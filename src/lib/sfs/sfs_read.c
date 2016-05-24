@@ -19,7 +19,7 @@ ssize_t sfs_read(sfs_unit* fs, off_t file,
 
         if (read_entry(fs->bdev, file, &entr) == -1) {
                 SET_ERRNO(EIO);
-                return 0;
+                return -1;
         }
 
         file_size = AS_FILE(&entr)->size;
@@ -37,6 +37,7 @@ ssize_t sfs_read(sfs_unit* fs, off_t file,
         }
 
         update(fs);
+        SET_ERRNO(0);
         return read_data(fs->bdev, file_start * fs->bdev->block_size + off,
                          (uint8_t*) data, read_size);
 }

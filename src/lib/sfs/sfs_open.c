@@ -17,6 +17,6 @@ off_t sfs_open(sfs_unit* fs, const char* filepath)
                 SET_ERRNO(ENOENT);
                 }
         }
-
+        
         return file;
 }

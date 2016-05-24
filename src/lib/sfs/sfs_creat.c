@@ -26,21 +26,25 @@ int sfs_creat(sfs_unit* fs, const char* filepath)
 
         if (is_correct_filepath(filepath) != 0) {
                 SFS_TRACE("Incorrect filename %s", filepath);
+                SET_ERRNO(EINVAL);
                 return -1;
         }
         
         if (check_dirs(fs, (char*) filepath, &entr) != 0) {
                 SFS_TRACE("File dirs %s exist. Offset: %lu", filepath, start);
+                SET_ERRNO(EEXIST);
                 return -1;
         }
 
         if ((start = search_dir(fs, (char*) filepath, &entr)) != 0) {
                 SFS_TRACE("Dir %s exist. Offset: %lu", filepath, start);
+                SET_ERRNO(EEXIST);
                 return -1;
         }
 
         if ((start = search_file(fs, (char*) filepath, &entr)) != 0) {
                 SFS_TRACE("File %s exist. Offset: %lu", filepath, start);
+                SET_ERRNO(EEXIST);
                 return -1;
         }
 
@@ -50,6 +54,7 @@ int sfs_creat(sfs_unit* fs, const char* filepath)
 
         if ((start = alloc_entry(fs, &entr, n)) == 0) {
                 SFS_TRACE("Not enough space for file %s %d", filepath, n);
+                SET_ERRNO(ENOSPC);
                 return -1;
         }
         SFS_TRACE("Start: %lX %s %d", start, filepath, n);
@@ -83,5 +88,6 @@ int sfs_creat(sfs_unit* fs, const char* filepath)
         }
 
         update(fs);
+        SET_ERRNO(0);
         return 0;
 }
