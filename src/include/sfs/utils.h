@@ -1,7 +1,7 @@
 #ifndef _SFS_UTILS_
 #define _SFS_UTILS_
 #include <sfs/defs.h>
-
+#include <sfs/debug.h>
 #include <sfs/mbr.h>
 
 #define SFS_ERRNO
@@ -12,15 +12,17 @@ uint8_t* memcpy(void* dst, void* src, size_t size);
 void* memset(void* dst, int c, size_t size);
 #endif
 
-inline static int is_correct_char(char c) 
+inline static int is_correct_char(unsigned char c) 
 {
-        if (c < 0x20  || (c >= 0x80 && c <= 0x9F) ||
+        if ((0 < c && c < 0x20) || (c >= 0x80 && c <= 0x9F) ||
             c == '"'  || c == '*'  ||
             c == ':'  || c == '<'  ||
             c == '>'  || c == '?'  ||
             c == '\\' || c == 0x5C ||
-            c == 0x7F || c == 0xA0) 
+            c == 0x7F || c == 0xA0) { 
+                SFS_TRACE("Incorrect char %u", c);
                 return -1;
+        }
         return 0;
 }
 
