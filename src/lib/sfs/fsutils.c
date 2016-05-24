@@ -238,7 +238,7 @@ off_t search_file(sfs_unit* fs, char* filepath, entry* entr)
         if ((start_off = entry_parse(fs, entr, 
                                     read_file_entry, filepath)) == 0) {
                 SFS_TRACE("Didn't found file %s", filepath);
-                return 0;(const char*) 
+                return 0; 
         }
 
         if ((n = ((file_entry*) entr)->cont_entries) == 0) {
