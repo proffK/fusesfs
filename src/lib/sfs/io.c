@@ -18,16 +18,16 @@ size_t read_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
                  "data:   %p\n"
                  "size:   %lu\n", offset, data, size);
 
-        if (dev->buf_num != bnum) {
+//        if (dev->buf_num != bnum) {
                 IO_TRACE("Read block: %lu\n", bnum);
                 if (dev->read(dev, buf, bsize, bnum) == -1) {
                         SET_ERRNO(EIO);
-                        IO_TRACE("Reading failed\n");
+                        SFS_TRACE("Reading failed\n");
                         return -1;
                 }
 
                 dev->buf_num = bnum;
-        }
+//       }
 
         if (cur_pos + size <= bsize) {
                 memcpy(data, buf + cur_pos, size);
@@ -40,10 +40,10 @@ size_t read_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
         bnum++;
 
         while (size >= bsize) {
-                IO_TRACE("Read block: %lu\n", bnum);
+                SFS_TRACE("Read block: %lu\n", bnum);
                 if (dev->read(dev, buf, bsize, bnum) == -1) {
                         SET_ERRNO(EIO);
-                        IO_TRACE("Reading failed\n");
+                        SFS_TRACE("Reading failed\n");
                         return -1;
                 }
 
@@ -79,10 +79,10 @@ size_t write_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
                  "data:   %p\n"
                  "size:   %lu\n", offset, data, size);
 
-        IO_TRACE("Read block: %lu", bnum);
+        SFS_TRACE("Read block: %lu", bnum);
         if (dev->read(dev, buf, bsize, bnum) == -1) {
                 SET_ERRNO(EIO);
-                IO_TRACE("Reading failed\n");
+                SFS_TRACE("Reading failed\n");
                 return -1;
         }
         dev->buf_num = bnum;

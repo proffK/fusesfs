@@ -15,6 +15,7 @@
 #include <sys/sem.h>
 #include <sys/stat.h>
 #include <sys/file.h>
+#include <sys/mman.h>
 
 #include <sfs/unit.h>
 #include <sfs/debug.h>
@@ -69,19 +70,28 @@ sfs_unit* sfs_description = NULL;
 /* +++++++++++++++++++++++++++++++ Functions +++++++++++++++++++++++++++++++ */
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 
-static inline int index_lock_init() {
-        return pthread_rwlock_init(&(index_lock), NULL); 
+static inline int index_lock_init() 
+{
+        pthread_rwlockattr_t attr;
+        pthread_rwlockattr_init(&attr);
+        pthread_rwlockattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
+        int ret = pthread_rwlock_init(&(index_lock), &attr); 
+        return ret;
 }
-static inline void index_rdlock() {
+static inline void index_rdlock() 
+{
         pthread_rwlock_rdlock(&(index_lock));
 }
-static inline void index_wrlock() {
+static inline void index_wrlock() 
+{
         pthread_rwlock_wrlock(&(index_lock));
 }
-static inline void index_unlock() {
+static inline void index_unlock() 
+{
         pthread_rwlock_unlock(&(index_lock));
 }
-static inline int index_lock_destroy() {
+static inline int index_lock_destroy() 
+{
         return pthread_rwlock_destroy(&index_lock);
 }
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
@@ -133,173 +143,178 @@ static inline char* new_path(const char* path)
 /* +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ */
 static void* fuse_sfs_init()
 {
-        SFS_TRACE("INIT");
-        uint8_t bs_p2 = 0;
-        uint64_t bs = 0;
-        uint64_t file_size = 0;
-        struct stat dstat;
-        struct mbr_t mbr;
-        entry entr;
-        char Answer = '\0';
-        size_t data_size = 0;
-        size_t free_size = 0;
-        size_t used_size = 0;
-        blockdev* bdev = malloc(sizeof(blockdev));
-        filedev_data* fdev = malloc(sizeof(filedev_data));
-        sfs_description = malloc(sizeof(sfs_unit));
-        /*
-         * Try to recognize block_size
-         */
-        int temp_fd = open(imagefile, O_RDONLY);
-        fstat(temp_fd, &dstat);
-        if (!(dstat.st_mode & S_IFBLK) &&
-            !(dstat.st_mode & S_IFREG)) {
-                fprintf(stderr, "Image is not a regular "
-                                "file or block device!\n");
-                close(temp_fd);
-                free(fdev);
-                free(bdev);
-                free(sfs_description);
-                exit(EXIT_FAILURE);
-        }
-
-        lseek(temp_fd, offsetof(struct mbr_t, block_size), SEEK_SET);
-        if (read(temp_fd, &bs_p2, 1) == 0) {
-                perror("");
-                close(temp_fd);
-                free(fdev);
-                free(bdev);
-                free(sfs_description);
-                exit(EXIT_FAILURE);
-        }
-        bs = 128 << bs_p2;
-        if (bs <= 128) {
-                fprintf(stderr, "Block size isn't valid!\n");
-                close(temp_fd);
-                free(fdev);
-                free(bdev);
-                free(sfs_description);
-                exit(EXIT_FAILURE);
-        }
-        lseek(temp_fd, offsetof(struct mbr_t, total_size), SEEK_SET);
-        if (read(temp_fd, &file_size, 8) == 0) {
-                perror("");
-                close(temp_fd);
-                free(fdev);
-                free(bdev);
-                free(sfs_description);
-                exit(EXIT_FAILURE);
-        }
-        close(temp_fd);
-        SFS_TRACE("BS: %lu, FS: %lu", bs, file_size);
-        /*
-         * Init fs
-         */ 
-        fdev->fd = -1;
-        bdev = filedev_create(bdev, fdev, bs, file_size * bs);
-        fdev->filename = imagefile;
-        if (blockdev_init(bdev) != 0) {
-                perror("");
-                free(fdev);
-                free(bdev);
-                free(sfs_description);
-                exit(EXIT_FAILURE);
-        }
-
-        if (sfs_init(sfs_description, bdev) < 0) {
-                fprintf(stderr, "The image was corrupted.\n");
-                bdev->release(bdev);
-                free(bdev->dev_data);
-                free(bdev);
-                free(sfs_description);
-                exit(EXIT_FAILURE);
-        }
-
-        if (dstat.st_mtime - sfs_description->time > 1) {
-                fprintf(stderr, "Modification time and timestamp are differ\n"
-                                "WE DON'T GIVE ANY WARRANTY!\n");
-                fprintf(stderr, "ha mtime %lu time %lu", 
-                                dstat.st_mtime,
-                                sfs_description->time);
-                while (Answer != 'Y' && Answer != 'n') {
-                        fprintf(stderr, "Do you want to continue?\n"
-                                        "Press [Y/n]\n");
-                        Answer = getchar();
-                }
-                if (Answer == 'n') {
-                        bdev->release(bdev);
-                        free(bdev->dev_data);
-                        free(bdev);
-                        free(sfs_description);
-                        exit(EXIT_FAILURE);
-                }
-        }
-        else
-                fprintf(stderr, "Modification time and timestamp "
-                                "are equal\n");
-
-        read_data(sfs_description->bdev, 0, (uint8_t*) &mbr, 
-                  sizeof(struct mbr_t));
-
-        data_size = mbr.data_area_size * sfs_description->bdev->block_size;
-        free_size = scan_del_file_list(sfs_description, &entr);
-        if (free_size == -1) {
-                fprintf(stderr, "Allocation of free space was " 
-                                "completly broken\n"
-                                "Filesystem cannot be mounted\n");
-                bdev->release(bdev);
-                free(bdev->dev_data);
-                free(bdev);
-                free(sfs_description);
-                exit(EXIT_FAILURE);
-        }
- 
-        used_size = scan_used_space(sfs_description, &entr);
-        
-        if (data_size != free_size + used_size) {
-                fprintf(stderr, "Allocation of free space was broken\n"
-                                "free size = %lu\n"
-                                "used size = %lu\n"
-                                "data size = %lu\n", free_size, used_size,
-                                                     data_size);
-                while (Answer != 'y' && Answer != 'N') {
-                        fprintf(stderr, "Do you want to continue?\n"
-                                        "WE DON'T GIVE ANY WARRANTY!\n"
-                                        "Press [y/N]\n");
-                        Answer = getchar();
-                }
-                if (Answer == 'N') {
-                        bdev->release(bdev);
-                        free(bdev->dev_data);
-                        free(bdev);
-                        free(sfs_description);
-                        exit(EXIT_FAILURE);
-                }
-        }
-        fix_non_del_file(sfs_description, &entr);
- 
-        /* 
-         * Create inode container
-         */
-        if (inode_map_create() == -1) {
-                sfs_release(sfs_description);
-                sfs_description->bdev->release(sfs_description->bdev);
-                free(sfs_description->bdev->dev_data);
-                free(sfs_description->bdev);
-                free(sfs_description);
-                exit(EXIT_FAILURE);
-        }
-        if (index_lock_init() == -1) {
-                inode_map_delete();
-                sfs_release(sfs_description);
-                sfs_description->bdev->release(sfs_description->bdev);
-                free(sfs_description->bdev->dev_data);
-                free(sfs_description->bdev);
-                free(sfs_description);
-                exit(EXIT_FAILURE);
-        }
-
-        SFS_TRACE("Init finished");
+//        SFS_TRACE("INIT");
+//        uint8_t bs_p2 = 0;
+//        uint64_t bs = 0;
+//        uint64_t file_size = 0;
+//        struct stat dstat;
+//        struct mbr_t mbr;
+//        entry entr;
+//        char Answer = '\0';
+//        size_t data_size = 0;
+//        size_t free_size = 0;
+//        size_t used_size = 0;
+//        blockdev* bdev = mmap(NULL, sizeof(blockdev), PROT_READ | PROT_WRITE,
+//                          MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
+//        filedev_data* fdev = mmap(NULL, sizeof(fdev), PROT_READ | PROT_WRITE,
+//                          MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
+//        sfs_description = mmap(NULL, sizeof(sfs_unit), PROT_READ | PROT_WRITE,
+//                         MAP_SHARED | MAP_ANONYMOUS | MAP_LOCKED, 0, 0);
+//        /*
+//         * Try to recognize block_size
+//         */
+//        perror("");
+//        fprintf(stderr, "Pinters: %p %p %p", bdev, fdev, sfs_description);
+//        int temp_fd = open(imagefile, O_RDONLY);
+//        fstat(temp_fd, &dstat);
+//        if (!(dstat.st_mode & S_IFBLK) &&
+//            !(dstat.st_mode & S_IFREG)) {
+//                fprintf(stderr, "Image is not a regular "
+//                                "file or block device!\n");
+//                close(temp_fd);
+//                munmap(fdev, sizeof(filedev_data));
+//                munmap(bdev, sizeof(blockdev));
+//                munmap(sfs_description, sizeof(sfs_unit));
+//                exit(EXIT_FAILURE);
+//        }
+//
+//        lseek(temp_fd, offsetof(struct mbr_t, block_size), SEEK_SET);
+//        if (read(temp_fd, &bs_p2, 1) == 0) {
+//                perror("");
+//                close(temp_fd);
+//                munmap(fdev, sizeof(filedev_data));
+//                munmap(bdev, sizeof(blockdev));
+//                munmap(sfs_description, sizeof(sfs_unit));
+//                exit(EXIT_FAILURE);
+//        }
+//        bs = 128 << bs_p2;
+//        if (bs <= 128) {
+//                fprintf(stderr, "Block size isn't valid!\n");
+//                close(temp_fd);
+//                munmap(fdev, sizeof(filedev_data));
+//                munmap(bdev, sizeof(blockdev));
+//                munmap(sfs_description, sizeof(sfs_unit));
+//                exit(EXIT_FAILURE);
+//        }
+//        lseek(temp_fd, offsetof(struct mbr_t, total_size), SEEK_SET);
+//        if (read(temp_fd, &file_size, 8) == 0) {
+//                perror("");
+//                close(temp_fd);
+//                munmap(fdev, sizeof(filedev_data));
+//                munmap(bdev, sizeof(blockdev));
+//                munmap(sfs_description, sizeof(sfs_unit));
+//                exit(EXIT_FAILURE);
+//        }
+//        close(temp_fd);
+//        SFS_TRACE("BS: %lu, FS: %lu", bs, file_size);
+//        /*
+//         * Init fs
+//         */ 
+//        fdev->fd = -1;
+//        bdev = filedev_create(bdev, fdev, bs, file_size * bs);
+//        fdev->filename = imagefile;
+//        if (blockdev_init(bdev) != 0) {
+//                perror("");
+//                munmap(fdev, sizeof(filedev_data));
+//                munmap(bdev, sizeof(blockdev));
+//                munmap(sfs_description, sizeof(sfs_unit));
+//                exit(EXIT_FAILURE);
+//        }
+//
+//        if (sfs_init(sfs_description, bdev) < 0) {
+//                fprintf(stderr, "The image was corrupted.\n");
+//                bdev->release(bdev);
+//                munmap(fdev, sizeof(filedev_data));
+//                munmap(bdev, sizeof(blockdev));
+//                munmap(sfs_description, sizeof(sfs_unit));
+//                exit(EXIT_FAILURE);
+//        }
+//
+//        if (dstat.st_mtime - sfs_description->time > 1) {
+//                fprintf(stderr, "Modification time and timestamp are differ\n"
+//                                "WE DON'T GIVE ANY WARRANTY!\n");
+//                fprintf(stderr, "ha mtime %lu time %lu", 
+//                                dstat.st_mtime,
+//                                sfs_description->time);
+//                while (Answer != 'Y' && Answer != 'n') {
+//                        fprintf(stderr, "Do you want to continue?\n"
+//                                        "Press [Y/n]\n");
+//                        Answer = getchar();
+//                }
+//                if (Answer == 'n') {
+//                        bdev->release(bdev);
+//                        munmap(fdev, sizeof(filedev_data));
+//                        munmap(bdev, sizeof(blockdev));
+//                        munmap(sfs_description, sizeof(sfs_unit));
+//                        exit(EXIT_FAILURE);
+//                }
+//        }
+//        else
+//                fprintf(stderr, "Modification time and timestamp "
+//                                "are equal\n");
+//
+//        read_data(sfs_description->bdev, 0, (uint8_t*) &mbr, 
+//                  sizeof(struct mbr_t));
+//
+//        data_size = mbr.data_area_size * sfs_description->bdev->block_size;
+//        free_size = scan_del_file_list(sfs_description, &entr);
+//        if (free_size == -1) {
+//                fprintf(stderr, "Allocation of free space was " 
+//                                "completly broken\n"
+//                                "Filesystem cannot be mounted\n");
+//                bdev->release(bdev);
+//                munmap(fdev, sizeof(filedev_data));
+//                munmap(bdev, sizeof(blockdev));
+//                munmap(sfs_description, sizeof(sfs_unit));
+//                exit(EXIT_FAILURE);
+//        }
+// 
+//        used_size = scan_used_space(sfs_description, &entr);
+//        
+//        if (data_size != free_size + used_size) {
+//                fprintf(stderr, "Allocation of free space was broken\n"
+//                                "free size = %lu\n"
+//                                "used size = %lu\n"
+//                                "data size = %lu\n", free_size, used_size,
+//                                                     data_size);
+//                while (Answer != 'y' && Answer != 'N') {
+//                        fprintf(stderr, "Do you want to continue?\n"
+//                                        "WE DON'T GIVE ANY WARRANTY!\n"
+//                                        "Press [y/N]\n");
+//                        Answer = getchar();
+//                }
+//                if (Answer == 'N') {
+//                        bdev->release(bdev);
+//                        munmap(fdev, sizeof(filedev_data));
+//                        munmap(bdev, sizeof(blockdev));
+//                        munmap(sfs_description, sizeof(sfs_unit));
+//                        exit(EXIT_FAILURE);
+//                }
+//        }
+//        fix_non_del_file(sfs_description, &entr);
+// 
+//        /* 
+//         * Create inode container
+//         */
+//        if (inode_map_create() == -1) {
+//                sfs_release(sfs_description);
+//                sfs_description->bdev->release(sfs_description->bdev);
+//                munmap(fdev, sizeof(filedev_data));
+//                munmap(bdev, sizeof(blockdev));
+//                munmap(sfs_description, sizeof(sfs_unit));
+//                exit(EXIT_FAILURE);
+//        }
+//        if (index_lock_init() == -1) {
+//                inode_map_delete();
+//                sfs_release(sfs_description);
+//                sfs_description->bdev->release(sfs_description->bdev);
+//                munmap(fdev, sizeof(filedev_data));
+//                munmap(bdev, sizeof(blockdev));
+//                munmap(sfs_description, sizeof(sfs_unit));
+//                exit(EXIT_FAILURE);
+//        }
+//
+//        SFS_TRACE("Init finished");
         return NULL;
 }
 
@@ -309,15 +324,15 @@ static void fuse_sfs_destroy(void* param)
         inode_map_delete();
         sfs_release(sfs_description);
         sfs_description->bdev->release(sfs_description->bdev);
-        free(sfs_description->bdev->dev_data);
-        free(sfs_description->bdev);
-        free(sfs_description);
+        munmap(sfs_description->bdev->dev_data, sizeof(filedev_data));
+        munmap(sfs_description->bdev, sizeof(blockdev));
+        munmap(sfs_description, sizeof(sfs_unit));
         
 }
 //Multithreading version
 static int fuse_sfs_getattr(const char* path, struct stat *stbuf) 
 {
-        SFS_TRACE("GETATTR path %s", path);
+        SFS_TRACE("GETATTR path %s pid %d", path, getpid());
         path++;
         char* cpath = new_path(path);
         vino_t vino;
@@ -366,7 +381,7 @@ static int fuse_sfs_getattr(const char* path, struct stat *stbuf)
 
 static int fuse_sfs_open(const char* path, struct fuse_file_info* fi)
 {
-        SFS_TRACE("OPEN path %s", path);
+        SFS_TRACE("OPEN path %s pid %d", path, getpid());
         path++;
         char* cpath = new_path(path);
         vino_t vino = 0;
@@ -395,7 +410,7 @@ static int fuse_sfs_open(const char* path, struct fuse_file_info* fi)
 
 static int fuse_sfs_release(const char* path, struct fuse_file_info* fi)
 {
-        SFS_TRACE("RELEASE path %s", path);
+        SFS_TRACE("RELEASE path %s pid %d", path, getpid());
         vino_t vino = fi->fh;
         inode_map_rdlock();
         int dirty = get_dirty(vino);
@@ -427,7 +442,7 @@ static int fuse_sfs_readdir(const char* path, void* buf,
                             fuse_fill_dir_t filler, off_t offset,
                             struct fuse_file_info* fi)
 {
-        SFS_TRACE("READDIR path %s", path);
+        SFS_TRACE("READDIR path %s pid %d", path, getpid());
         (void) offset;
         (void) fi;
         diriter iter;
@@ -444,18 +459,18 @@ static int fuse_sfs_readdir(const char* path, void* buf,
         iter.filename = cpath;
         iter.len = PATH_MAX;
         iter.cur_off = 0;
+        
+        index_rdlock();
 
         while (iter.filename != NULL) {
                 struct stat st_buf;
                 pino_t pino = 0;
                 memset(&st_buf, 0, sizeof(struct stat));
-                index_rdlock();
                 if (sfs_readdir(sfs_description, &iter) != 0) {
                         index_unlock();
                         free(cpath);
                         return -1; 
                 }
-                index_unlock();
                 if (iter.filename == NULL)
                         break;
                 st_buf.st_dev = getpid();
@@ -483,6 +498,9 @@ static int fuse_sfs_readdir(const char* path, void* buf,
                 }
                 iter.filename[len] = '\0';
         }
+                
+        index_unlock();
+
         free(cpath);
         return 0;
 }
@@ -505,7 +523,7 @@ static int fuse_sfs_mkdir(const char* path, mode_t mode)
 
 static int fuse_sfs_unlink(const char* path)
 {
-        SFS_TRACE("UNLINK path%s", path);
+        SFS_TRACE("UNLINK path %s pid %d", path, getpid());
         path++;
         char* cpath = new_path(path);
         pino_t pino = 0;
@@ -516,7 +534,6 @@ static int fuse_sfs_unlink(const char* path)
                 free(cpath);
                 return -sfs_errno;
         }
-        index_unlock();
 
         inode_map_rdlock();
         vino = get_vino(pino);
@@ -531,6 +548,7 @@ static int fuse_sfs_unlink(const char* path)
                 index_unlock();
                 return 0;
         }
+        index_unlock();
         inode_map_wrlock();
         int openbit = get_openbit(vino);
         if (openbit == 1) {
@@ -570,7 +588,7 @@ static int fuse_sfs_rmdir(const char* path)
 
 static int fuse_sfs_rename(const char* from, const char* to)
 {
-        SFS_TRACE("RENAME from %s to %s", from, to);
+        SFS_TRACE("RENAME from %s to %s pid %d", from, to, getpid());
         from++;
         to++;
         char* cpath_from = new_path(from);
@@ -651,8 +669,8 @@ static int fuse_sfs_rename(const char* from, const char* to)
 static int fuse_sfs_read(const char* path, char *buf, size_t size, 
                          off_t offset, struct fuse_file_info* fi)
 {
-        SFS_TRACE("READ: Path: %s Virtual inode %lu Physical inode %lu",
-                  path, fi->fh, get_pino(fi->fh));
+        SFS_TRACE("READ: Path: %s Virtual inode %lu Physical inode %lu pid %d",
+                  path, fi->fh, get_pino(fi->fh), getpid());
         int num_byte = 0;
         inode_map_rdlock();
         pino_t pino = get_pino(fi->fh);
@@ -673,8 +691,8 @@ static int fuse_sfs_write(const char* path, const char *buf, size_t size,
         inode_map_rdlock();
         pino_t pino = get_pino(fi->fh);
         inode_map_unlock();
-        SFS_TRACE("WRITE: Path: %s Virtual inode %lu Physical inode %lu",
-                  path, fi->fh, pino);
+        SFS_TRACE("WRITE: Path: %s Virtual inode %lu Physical inode %lu pid %d",
+                  path, fi->fh, pino, getpid());
         int num_byte = 0;
         index_wrlock();
         if ((num_byte = sfs_write(sfs_description, pino,
@@ -688,7 +706,7 @@ static int fuse_sfs_write(const char* path, const char *buf, size_t size,
 
 static int fuse_sfs_mknod(const char* path, mode_t mode, dev_t rdev) 
 {
-        SFS_TRACE("MKNOOOOOOD path %s", path);
+        SFS_TRACE("MKNOOOOOOD path %s pid %d", path, getpid());
         if (!(mode & S_IFREG))
                 return -ENOTSUP;
         path++;
@@ -731,7 +749,8 @@ static int fuse_sfs_truncate(const char* path, off_t length)
         char* cpath = new_path(path);
         index_wrlock();
         pino_t pino = sfs_open(sfs_description, cpath);
-        SFS_TRACE("TRUNCATE path %s Physical inode %lu", path, pino);
+        SFS_TRACE("TRUNCATE path %s Physical inode %lu pid %d", path, pino, 
+                                                                getpid());
         if (pino == 0) {
                 index_unlock();
                 return -sfs_errno;
@@ -764,7 +783,7 @@ static int fuse_sfs_ftruncate(const char* path, off_t length,
 
 static int fuse_sfs_opendir(const char* path, struct fuse_file_info* fi)
 {
-        SFS_TRACE("OPENDIR path %s", path);
+        SFS_TRACE("OPENDIR path %s pid %d", path, getpid());
         path++;
         char* cpath = new_path(path);
         vino_t vino;
@@ -807,7 +826,8 @@ static int fuse_sfs_opendir(const char* path, struct fuse_file_info* fi)
 
 static int fuse_sfs_releasedir(const char* path, struct fuse_file_info* fi)
 {
-        SFS_TRACE("RELEASEDIR path %s virtual inode %lu", path, fi->fh);
+        SFS_TRACE("RELEASEDIR path %s virtual inode %lu pid %d", 
+                        path, fi->fh, getpid());
         path++;
         char* cpath = new_path(path);
         vino_t vino = fi->fh;
@@ -830,7 +850,7 @@ static int fuse_sfs_releasedir(const char* path, struct fuse_file_info* fi)
 
 static int fuse_sfs_statfs(const char* path, struct statvfs* stfs)
 {
-        SFS_TRACE("STATFS path %s", path);
+        SFS_TRACE("STATFS path %s pid %d", path, getpid());
         entry entr;
         struct mbr_t mbr;
         read_data(sfs_description->bdev, 0, (uint8_t*) &mbr, 
@@ -934,6 +954,179 @@ int main(int argc, char* argv[]) {
         /*
          * Expand options for sending to FUSE
          */
+        imagefile = argv[optind];
+        SFS_TRACE("INIT");
+        uint8_t bs_p2 = 0;
+        uint64_t bs = 0;
+        uint64_t file_size = 0;
+        struct stat dstat;
+        struct mbr_t mbr;
+        entry entr;
+        char Answer = '\0';
+        size_t data_size = 0;
+        size_t free_size = 0;
+        size_t used_size = 0;
+        blockdev* bdev = mmap(NULL, sizeof(blockdev), PROT_READ | PROT_WRITE,
+                          MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
+        filedev_data* fdev = mmap(NULL, sizeof(fdev), PROT_READ | PROT_WRITE,
+                          MAP_ANONYMOUS | MAP_PRIVATE, 0, 0);
+        sfs_description = mmap(NULL, sizeof(sfs_unit), PROT_READ | PROT_WRITE,
+                         MAP_SHARED | MAP_ANONYMOUS | MAP_LOCKED, 0, 0);
+        /*
+         * Try to recognize block_size
+         */
+        perror("");
+        fprintf(stderr, "Pinters: %p %p %p", bdev, fdev, sfs_description);
+        int temp_fd = open(imagefile, O_RDONLY);
+        fstat(temp_fd, &dstat);
+        if (!(dstat.st_mode & S_IFBLK) &&
+            !(dstat.st_mode & S_IFREG)) {
+                fprintf(stderr, "Image is not a regular "
+                                "file or block device!\n");
+                close(temp_fd);
+                munmap(fdev, sizeof(filedev_data));
+                munmap(bdev, sizeof(blockdev));
+                munmap(sfs_description, sizeof(sfs_unit));
+                exit(EXIT_FAILURE);
+        }
+
+        lseek(temp_fd, offsetof(struct mbr_t, block_size), SEEK_SET);
+        if (read(temp_fd, &bs_p2, 1) == 0) {
+                perror("");
+                close(temp_fd);
+                munmap(fdev, sizeof(filedev_data));
+                munmap(bdev, sizeof(blockdev));
+                munmap(sfs_description, sizeof(sfs_unit));
+                exit(EXIT_FAILURE);
+        }
+        bs = 128 << bs_p2;
+        if (bs <= 128) {
+                fprintf(stderr, "Block size isn't valid!\n");
+                close(temp_fd);
+                munmap(fdev, sizeof(filedev_data));
+                munmap(bdev, sizeof(blockdev));
+                munmap(sfs_description, sizeof(sfs_unit));
+                exit(EXIT_FAILURE);
+        }
+        lseek(temp_fd, offsetof(struct mbr_t, total_size), SEEK_SET);
+        if (read(temp_fd, &file_size, 8) == 0) {
+                perror("");
+                close(temp_fd);
+                munmap(fdev, sizeof(filedev_data));
+                munmap(bdev, sizeof(blockdev));
+                munmap(sfs_description, sizeof(sfs_unit));
+                exit(EXIT_FAILURE);
+        }
+        close(temp_fd);
+        SFS_TRACE("BS: %lu, FS: %lu", bs, file_size);
+        /*
+         * Init fs
+         */ 
+        fdev->fd = -1;
+        bdev = filedev_create(bdev, fdev, bs, file_size * bs);
+        fdev->filename = imagefile;
+        if (blockdev_init(bdev) != 0) {
+                perror("");
+                munmap(fdev, sizeof(filedev_data));
+                munmap(bdev, sizeof(blockdev));
+                munmap(sfs_description, sizeof(sfs_unit));
+                exit(EXIT_FAILURE);
+        }
+
+        if (sfs_init(sfs_description, bdev) < 0) {
+                fprintf(stderr, "The image was corrupted.\n");
+                bdev->release(bdev);
+                munmap(fdev, sizeof(filedev_data));
+                munmap(bdev, sizeof(blockdev));
+                munmap(sfs_description, sizeof(sfs_unit));
+                exit(EXIT_FAILURE);
+        }
+
+        if (dstat.st_mtime - sfs_description->time > 1) {
+                fprintf(stderr, "Modification time and timestamp are differ\n"
+                                "WE DON'T GIVE ANY WARRANTY!\n");
+                fprintf(stderr, "ha mtime %lu time %lu", 
+                                dstat.st_mtime,
+                                sfs_description->time);
+                while (Answer != 'Y' && Answer != 'n') {
+                        fprintf(stderr, "Do you want to continue?\n"
+                                        "Press [Y/n]\n");
+                        Answer = getchar();
+                }
+                if (Answer == 'n') {
+                        bdev->release(bdev);
+                        munmap(fdev, sizeof(filedev_data));
+                        munmap(bdev, sizeof(blockdev));
+                        munmap(sfs_description, sizeof(sfs_unit));
+                        exit(EXIT_FAILURE);
+                }
+        }
+        else
+                fprintf(stderr, "Modification time and timestamp "
+                                "are equal\n");
+
+        read_data(sfs_description->bdev, 0, (uint8_t*) &mbr, 
+                  sizeof(struct mbr_t));
+
+        data_size = mbr.data_area_size * sfs_description->bdev->block_size;
+        free_size = scan_del_file_list(sfs_description, &entr);
+        if (free_size == -1) {
+                fprintf(stderr, "Allocation of free space was " 
+                                "completly broken\n"
+                                "Filesystem cannot be mounted\n");
+                bdev->release(bdev);
+                munmap(fdev, sizeof(filedev_data));
+                munmap(bdev, sizeof(blockdev));
+                munmap(sfs_description, sizeof(sfs_unit));
+                exit(EXIT_FAILURE);
+        }
+ 
+        used_size = scan_used_space(sfs_description, &entr);
+        
+        if (data_size != free_size + used_size) {
+                fprintf(stderr, "Allocation of free space was broken\n"
+                                "free size = %lu\n"
+                                "used size = %lu\n"
+                                "data size = %lu\n", free_size, used_size,
+                                                     data_size);
+                while (Answer != 'y' && Answer != 'N') {
+                        fprintf(stderr, "Do you want to continue?\n"
+                                        "WE DON'T GIVE ANY WARRANTY!\n"
+                                        "Press [y/N]\n");
+                        Answer = getchar();
+                }
+                if (Answer == 'N') {
+                        bdev->release(bdev);
+                        munmap(fdev, sizeof(filedev_data));
+                        munmap(bdev, sizeof(blockdev));
+                        munmap(sfs_description, sizeof(sfs_unit));
+                        exit(EXIT_FAILURE);
+                }
+        }
+        fix_non_del_file(sfs_description, &entr);
+ 
+        /* 
+         * Create inode container
+         */
+        if (inode_map_create() == -1) {
+                sfs_release(sfs_description);
+                sfs_description->bdev->release(sfs_description->bdev);
+                munmap(fdev, sizeof(filedev_data));
+                munmap(bdev, sizeof(blockdev));
+                munmap(sfs_description, sizeof(sfs_unit));
+                exit(EXIT_FAILURE);
+        }
+        if (index_lock_init() == -1) {
+                inode_map_delete();
+                sfs_release(sfs_description);
+                sfs_description->bdev->release(sfs_description->bdev);
+                munmap(fdev, sizeof(filedev_data));
+                munmap(bdev, sizeof(blockdev));
+                munmap(sfs_description, sizeof(sfs_unit));
+                exit(EXIT_FAILURE);
+        }
+
+        SFS_TRACE("Init finished");
         char** nargv = (char**) malloc((NUM_OF_FUSE_OPTIONS) * sizeof(char*));
         int nargc = NUM_OF_FUSE_OPTIONS - 1;
         nargv[0] = argv[0];

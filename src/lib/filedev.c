@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/mman.h>
 #include <fcntl.h>
 
 #include <errno.h>
@@ -26,7 +27,7 @@ static int filedev_init(blockdev* bdev)
         if (FDEV->fd == -1) 
                 return -1;
 
-        if ((bdev->buf = (buf_t*) malloc (bdev->block_size)) == NULL) {
+        if ((bdev->buf = (buf_t*) mmap(NULL, bdev->block_size, PROT_READ|PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, 0, 0)) == (buf_t*) -1) {
                 errno = ENOMEM;
                 return -1;
         }
@@ -50,7 +51,7 @@ static int filedev_release(blockdev* bdev)
                 FDEV->fd = -1;
         }
 
-        free(bdev->buf);
+        munmap(bdev->buf, bdev->block_size);
 
         return 0;
 }
@@ -133,8 +134,8 @@ static size_t filedev_write(blockdev* bdev, buf_t* buf,
         if (start_pos == -1) 
                 return -1;
 
-        size = write(FDEV->fd, buf, buf_size);
-
+        size = write(FDEV->fd, buf, buf_size); 
+        //fsync(FDEV->fd);
         if (size != buf_size)
                 return -1;
 

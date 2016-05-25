@@ -2,12 +2,19 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
+#include <sys/mman.h>
+#include <string.h>
 
 inode_map_t* inode_map = NULL;
 
 static int inode_lock_init(vino_t vino) 
 {
-        return pthread_rwlock_init(&(inode_map->inode_table[vino].lock), NULL); 
+        pthread_rwlockattr_t attr;
+        pthread_rwlockattr_init(&attr);
+        pthread_rwlockattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
+        int ret = pthread_rwlock_init(&(inode_map->inode_table[vino].lock)
+                                      , &attr); 
+        return ret;
 }
 
 static int inode_lock_destroy(vino_t vino) 
@@ -17,7 +24,11 @@ static int inode_lock_destroy(vino_t vino)
 
 static int inode_map_lock_init() 
 {
-        return pthread_rwlock_init(&(inode_map->lock), NULL); 
+        pthread_rwlockattr_t attr;
+        pthread_rwlockattr_init(&attr);
+        pthread_rwlockattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
+        int ret = pthread_rwlock_init(&(inode_map->lock), &attr); 
+        return ret;
 }
 
 static int inode_map_lock_destroy() 
@@ -28,32 +39,45 @@ static int inode_map_lock_destroy()
 static int inode_map_resize(void) 
 { 
         file_t* buffer = inode_map->inode_table;
-        inode_map->inode_table = (file_t*)realloc(inode_map->inode_table, 
-                                 (inode_map->c_size) * 2 * sizeof(file_t));
+        inode_map->inode_table = mmap(NULL, 
+                         (inode_map->c_size) * 2 * sizeof(file_t), 
+                         PROT_READ|PROT_WRITE,
+                         MAP_ANONYMOUS|MAP_SHARED|MAP_LOCKED, 0, 0);
         if (inode_map->inode_table == NULL) {
                 inode_map->inode_table = buffer;
                 return -1;
         }
+        memcpy(inode_map->inode_table, buffer, inode_map->c_size);
         inode_map->c_size *= 2;
         return 0;                
 }
 
 int inode_map_create(void) 
 {
-        inode_map = (inode_map_t*)malloc(sizeof(inode_map_t));
-        if (inode_map == NULL)
+        inode_map = mmap(NULL, sizeof(inode_map_t), PROT_READ|PROT_WRITE,
+                         MAP_ANONYMOUS|MAP_SHARED|MAP_LOCKED, 0, 0);
+        if (!(inode_map))
                 return -1;
         inode_map->max_vino = 1;
-        inode_map->inode_table = (file_t*)malloc(sizeof(file_t) *
-                                                 INODE_MAP_DEFAULT_SIZE);
-        if (inode_map->inode_table == NULL) {
-                free(inode_map);
+        inode_map->inode_table = mmap(NULL, 
+                         (sizeof(file_t) * INODE_MAP_DEFAULT_SIZE), 
+                         PROT_READ|PROT_WRITE,
+                         MAP_ANONYMOUS|MAP_SHARED, 0, 0);
+        perror("");
+        fprintf(stderr, "inode_map %p\n", inode_map);
+        fprintf(stderr, "inode_map_table %p\n", inode_map->inode_table);
+        if (inode_map->inode_table == (file_t*) -1) {
+                munmap(inode_map, sizeof(inode_map_t));
                 return -1;
         }
         inode_map->c_size = INODE_MAP_DEFAULT_SIZE;
 
-        if (inode_map_lock_init() == -1)
+        if (inode_map_lock_init() == -1) {
+                munmap(inode_map->inode_table, 
+                        sizeof(file_t) * inode_map->c_size);
+                munmap(inode_map, sizeof(inode_map_t));
                 return -1;
+        }
 
         return 0;
 }
@@ -65,8 +89,9 @@ int inode_map_delete(void)
                 inode_lock_destroy(i);
         }
         inode_map_lock_destroy();
-        free(inode_map->inode_table);
-        free(inode_map);
+        munmap(inode_map->inode_table, 
+                sizeof(file_t) * inode_map->c_size);
+        munmap(inode_map, sizeof(inode_map_t));
         return 0;
 }
 
