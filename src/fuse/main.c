@@ -314,7 +314,7 @@ static void fuse_sfs_destroy(void* param)
         free(sfs_description);
         
 }
-
+//Multithreading version
 static int fuse_sfs_getattr(const char* path, struct stat *stbuf) 
 {
         SFS_TRACE("GETATTR path %s", path);
