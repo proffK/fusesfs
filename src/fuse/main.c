@@ -324,16 +324,28 @@ static int fuse_sfs_getattr(const char* path, struct stat *stbuf)
         sfs_attr attr;
         pino_t pino;
         index_rdlock();
-        if ((pino = sfs_open(sfs_description, cpath)) == 0)
+        if ((pino = sfs_open(sfs_description, cpath)) == 0) {
+                index_unlock();
                 return -sfs_errno;
+        }
+        index_unlock();
+        inode_map_rdlock();
         if ((vino = get_vino(pino)) == 0) {
+                inode_map_unlock();
+                inode_map_wrlock();
                 if ((vino = pino_add(pino)) == 0) {
                         free(cpath);
+                        inode_map_unlock();
                         return -ENOMEM;
                 }
-        }
-        if (sfs_getattr(sfs_description, pino, &attr) != 0)
+        } 
+        inode_map_unlock();
+        index_rdlock();
+        if (sfs_getattr(sfs_description, pino, &attr) != 0) {
+                index_unlock();
                 return -ENOENT;
+        }
+        index_unlock();
         stbuf->st_dev  = getpid();
         stbuf->st_ino  = vino;
         stbuf->st_size = attr.size;
@@ -358,20 +370,25 @@ static int fuse_sfs_open(const char* path, struct fuse_file_info* fi)
         path++;
         char* cpath = new_path(path);
         vino_t vino = 0;
+        index_rdlock();
         pino_t pino = sfs_open(sfs_description, cpath);
+        index_unlock();
         if (pino == 0)
                 return -sfs_errno;
 
+        inode_map_wrlock();
         if ((vino = get_vino(pino)) == 0) {
                 if ((vino = pino_add(pino)) == 0) {
                         free(cpath);
+                        inode_map_unlock();
                         return -ENOMEM;
                 }
-        }
+        } 
         set_openbit(vino);
         free(cpath);
         fi->fh = vino;
         vino_dump(vino);
+        inode_map_unlock();
         return 0;
 }
 
@@ -380,12 +397,23 @@ static int fuse_sfs_release(const char* path, struct fuse_file_info* fi)
 {
         SFS_TRACE("RELEASE path %s", path);
         vino_t vino = fi->fh;
-        if (get_dirty(vino) == 1) {
-                if (sfs_delete(sfs_description, get_pino(vino)) == -1)
+        inode_map_rdlock();
+        int dirty = get_dirty(vino);
+        inode_map_unlock();
+        if (dirty == 1) {
+                index_wrlock();
+                if (sfs_delete(sfs_description, get_pino(vino)) == -1) {
+                        index_unlock();
                         return -sfs_errno;
+                }
+                index_unlock();
+                inode_map_wrlock();
                 set_pino(vino, 0);
+                inode_map_unlock();
         }
+        inode_map_wrlock();
         clr_openbit(vino);
+        inode_map_unlock();
         return 0;                
 };        
 
@@ -419,20 +447,30 @@ static int fuse_sfs_readdir(const char* path, void* buf,
 
         while (iter.filename != NULL) {
                 struct stat st_buf;
+                pino_t pino = 0;
                 memset(&st_buf, 0, sizeof(struct stat));
+                index_rdlock();
                 if (sfs_readdir(sfs_description, &iter) != 0) {
+                        index_unlock();
                         free(cpath);
                         return -1; 
                 }
+                index_unlock();
                 if (iter.filename == NULL)
                         break;
                 st_buf.st_dev = getpid();
-                if ((vino = get_vino(iter.cur_off)) == 0) {
-                        if ((vino = pino_add(iter.cur_off)) == 0) {
+                pino = iter.cur_off;
+                inode_map_rdlock();
+                if ((vino = get_vino(pino)) == 0) {
+                        inode_map_unlock();
+                        inode_map_wrlock();
+                        if ((vino = pino_add(pino)) == 0) {
                                 free(cpath);
+                                inode_map_unlock();
                                 return -ENOMEM;
                         }
-                }
+                } 
+                inode_map_unlock();
                 st_buf.st_ino = vino;
                 if (iter.type == FILE_ITER_TYPE)
                         st_buf.st_mode = S_IFREG;
@@ -454,10 +492,13 @@ static int fuse_sfs_mkdir(const char* path, mode_t mode)
         SFS_TRACE("%s", "");
         path++;
         char* cpath = new_path(path);
+        index_wrlock();
         if (sfs_mkdir(sfs_description, cpath) == -1) {
+                index_unlock();
                 free(cpath);
                 return -EEXIST;
         }
+        index_unlock();
         free(cpath);
         return 0;
 }
@@ -469,26 +510,44 @@ static int fuse_sfs_unlink(const char* path)
         char* cpath = new_path(path);
         pino_t pino = 0;
         vino_t vino = 0;
-     
+        index_wrlock(); 
         if ((pino = sfs_unlink(sfs_description, cpath)) == 0) {
+                index_unlock();
                 free(cpath);
                 return -sfs_errno;
         }
+        index_unlock();
 
-        if ((vino = get_vino(pino)) == 0) {
+        inode_map_rdlock();
+        vino = get_vino(pino);
+        inode_map_unlock();
+        if (vino == 0) {
                 free(cpath);
-                if (sfs_delete(sfs_description, pino) == -1)
+                index_wrlock();
+                if (sfs_delete(sfs_description, pino) == -1) {
+                        index_unlock();
                         return -sfs_errno;
+                }
+                index_unlock();
                 return 0;
         }
-        if (get_openbit(vino) == 1)
+        inode_map_wrlock();
+        int openbit = get_openbit(vino);
+        if (openbit == 1) {
                 set_dirty(vino);
-        else {
-                if (sfs_delete(sfs_description, pino) == -1)
+        } 
+        inode_map_unlock();
+        if (openbit == 0) {
+                index_wrlock();
+                if (sfs_delete(sfs_description, pino) == -1) {
+                        index_unlock();
                         return -sfs_errno;
+                }
+                index_unlock();
+                inode_map_wrlock();
                 set_pino(vino, 0);
+                inode_map_unlock();
         }  
-
         free(cpath);
         return 0;
 }
@@ -498,10 +557,13 @@ static int fuse_sfs_rmdir(const char* path)
         SFS_TRACE("%s", "");
         path++;
         char* cpath = new_path(path);
+        index_wrlock();
         if (sfs_rmdir(sfs_description, cpath) == -1) {
+                index_unlock();
                 free(cpath);
                 return -1;
         }
+        index_unlock();
         free(cpath);
         return 0;
 }
@@ -517,30 +579,40 @@ static int fuse_sfs_rename(const char* from, const char* to)
         pino_t pino = 0;
         vino_t vino = 0;
         sfs_attr attr; 
+        index_rdlock();
         if ((old_pino = sfs_open(sfs_description, cpath_from)) == 0) {
                 free(cpath_from);
                 free(cpath_to);
+                index_unlock();
                 return -sfs_errno;
         }
 
         if (sfs_getattr(sfs_description, old_pino, &attr) == -1) {
+                free(cpath_from);
+                free(cpath_to);
+                index_unlock();
                 return -sfs_errno;
         }
 
+        index_unlock();
+        index_wrlock();
         if (attr.type == DIR_ITER_TYPE) {
                 if (sfs_rmdir(sfs_description, cpath_from) == -1) {
                         free(cpath_from);
                         free(cpath_to);
+                        index_unlock();
                         return -sfs_errno;
                 }
                 if (sfs_mkdir(sfs_description, cpath_to) == -1) {
                         free(cpath_from);
                         free(cpath_to);
+                        index_unlock();
                         return -sfs_errno;
                 }
                 if ((pino = sfs_open(sfs_description, cpath_to)) == 0) {
                         free(cpath_from);
                         free(cpath_to);
+                        index_unlock();
                         return -sfs_errno;
                 }
         } else {
@@ -549,26 +621,28 @@ static int fuse_sfs_rename(const char* from, const char* to)
                                        cpath_to)) == 0) {
                         free(cpath_from);
                         free(cpath_to);
+                        index_unlock();
                         return -sfs_errno;
                 }
         }
+        index_unlock();
 
         if (old_pino == pino) {
                 free(cpath_from);
                 free(cpath_to);
                 return 0;
         }
-        if ((vino = get_vino(old_pino)) == 0) {
+        inode_map_wrlock();
+        if ((vino = get_vino(pino)) == 0) {
                 if ((vino = pino_add(pino)) == 0) {
-                        free(cpath_from);
                         free(cpath_to);
+                        free(cpath_from);
+                        inode_map_unlock();
                         return -ENOMEM;
                 }
-                free(cpath_from);
-                free(cpath_to);
-                return 0;
-        }
+        } 
         set_pino(vino, pino);
+        inode_map_unlock();
         free(cpath_from);
         free(cpath_to);
         return 0;
@@ -580,24 +654,35 @@ static int fuse_sfs_read(const char* path, char *buf, size_t size,
         SFS_TRACE("READ: Path: %s Virtual inode %lu Physical inode %lu",
                   path, fi->fh, get_pino(fi->fh));
         int num_byte = 0;
-        if ((num_byte = sfs_read(sfs_description, get_pino(fi->fh), 
+        inode_map_rdlock();
+        pino_t pino = get_pino(fi->fh);
+        inode_map_unlock();
+        index_rdlock();
+        if ((num_byte = sfs_read(sfs_description, pino, 
                                  buf, size, offset)) == -1) {
-               return -sfs_errno;
+                index_unlock();
+                return -sfs_errno;
         } 
+        index_unlock();
         return num_byte;
 }
 
 static int fuse_sfs_write(const char* path, const char *buf, size_t size, 
                           off_t offset, struct fuse_file_info* fi)
 { 
+        inode_map_rdlock();
+        pino_t pino = get_pino(fi->fh);
+        inode_map_unlock();
         SFS_TRACE("WRITE: Path: %s Virtual inode %lu Physical inode %lu",
-                  path, fi->fh, get_pino(fi->fh));
+                  path, fi->fh, pino);
         int num_byte = 0;
-        if ((num_byte = sfs_write(sfs_description, get_pino(fi->fh),
+        index_wrlock();
+        if ((num_byte = sfs_write(sfs_description, pino,
                              (char*)buf, size, offset)) == -1) {
-                fprintf(stderr, "WRITE ERROR %d\n", sfs_errno);
-                return (-1)*sfs_errno;
+                index_unlock();
+                return -sfs_errno;
         }
+        index_unlock();
         return num_byte;
 }
 
@@ -609,14 +694,18 @@ static int fuse_sfs_mknod(const char* path, mode_t mode, dev_t rdev)
         path++;
         char* cpath = new_path(path);
 
+        index_wrlock();
         if (mode & S_IFREG && sfs_creat(sfs_description, cpath) == -1) {
+                index_unlock();
                 free(cpath);
                 return -ENOMEM;
         }
-        if (mode & S_IFDIR && sfs_creat(sfs_description, cpath) == -1) {
+        if (mode & S_IFDIR && sfs_mkdir(sfs_description, cpath) == -1) {
                 free(cpath);
+                index_unlock();
                 return -ENOMEM;
         }
+        index_unlock();
         free(cpath);
         return 0;
 }
@@ -640,12 +729,18 @@ static int fuse_sfs_truncate(const char* path, off_t length)
 {
         path++;
         char* cpath = new_path(path);
+        index_wrlock();
         pino_t pino = sfs_open(sfs_description, cpath);
         SFS_TRACE("TRUNCATE path %s Physical inode %lu", path, pino);
-        if (pino == 0)
+        if (pino == 0) {
+                index_unlock();
                 return -sfs_errno;
-        if (sfs_truncate(sfs_description, pino, length) != 0)
+        }
+        if (sfs_truncate(sfs_description, pino, length) != 0) {
+                index_unlock();
                 return -sfs_errno;
+        }
+        index_unlock();
         free(cpath);
         return 0;
 }
@@ -653,10 +748,17 @@ static int fuse_sfs_truncate(const char* path, off_t length)
 static int fuse_sfs_ftruncate(const char* path, off_t length, 
                               struct fuse_file_info* fi) 
 {
+        inode_map_rdlock();
+        pino_t pino = get_pino(fi->fh);
+        inode_map_unlock();
         SFS_TRACE("FTRUNCATE path %s Virtual inode %lu", 
-                   path, get_pino(fi->fh));
-        if (sfs_truncate(sfs_description, get_pino(fi->fh), length) != 0)
+                   path, pino);
+        index_wrlock();
+        if (sfs_truncate(sfs_description, get_pino(fi->fh), length) != 0) {
+                index_unlock();
                 return -sfs_errno;
+        }
+        index_unlock();
         return 0;
 }
 
@@ -668,25 +770,36 @@ static int fuse_sfs_opendir(const char* path, struct fuse_file_info* fi)
         vino_t vino;
         sfs_attr attr;
 
+        inode_map_rdlock();
         pino_t pino = sfs_open(sfs_description, cpath);
+        inode_map_unlock();
         fprintf(stderr, "PINOOOOOO %lu\n", pino);
-        if (pino == 0)
+        if (pino == 0) 
                 return -sfs_errno;
 
-        if (sfs_getattr(sfs_description, pino, &attr) != 0)
+        index_rdlock();
+        if (sfs_getattr(sfs_description, pino, &attr) != 0) {
+                index_unlock();
                 return -sfs_errno;
+        }
+        index_unlock();
 
         if (attr.type == FILE_ITER_TYPE) {
                 fprintf(stderr, "$$$$$OGO\n");
                 return -ENOTDIR;
         }
 
+        inode_map_rdlock();
         if ((vino = get_vino(pino)) == 0) {
+                inode_map_unlock();
+                inode_map_wrlock();
                 if ((vino = pino_add(pino)) == 0) {
                         free(cpath);
+                        inode_map_unlock();
                         return -ENOMEM;
                 }
-        }
+        } 
+        inode_map_unlock();
         fi->fh  = vino;
         free(cpath);
         return 0;
@@ -698,13 +811,21 @@ static int fuse_sfs_releasedir(const char* path, struct fuse_file_info* fi)
         path++;
         char* cpath = new_path(path);
         vino_t vino = fi->fh;
-        if (get_dirty(vino) == 1) {
-                if (sfs_rmdir(sfs_description, cpath) == -1)
+        inode_map_rdlock();
+        int dirty = get_dirty(vino);
+        inode_map_unlock();
+        index_wrlock();
+        if (dirty == 1) {
+                if (sfs_rmdir(sfs_description, cpath) == -1) {
+                        index_unlock();
                         return -sfs_errno;
-                set_pino(vino, 0);
+                }
         }
+        index_unlock();
+        inode_map_wrlock();
+        set_pino(vino, 0);
+        inode_map_unlock();
         return 0;                
-       
 }
 
 static int fuse_sfs_statfs(const char* path, struct statvfs* stfs)
@@ -712,8 +833,10 @@ static int fuse_sfs_statfs(const char* path, struct statvfs* stfs)
         SFS_TRACE("STATFS path %s", path);
         entry entr;
         struct mbr_t mbr;
-        read_data(sfs_description->bdev, 0, (uint8_t*) &mbr, sizeof(struct mbr_t));
+        read_data(sfs_description->bdev, 0, (uint8_t*) &mbr, 
+                  sizeof(struct mbr_t));
 
+        index_rdlock();
         stfs->f_bsize = sfs_description->bdev->block_size;
         stfs->f_frsize = stfs->f_bsize;
         stfs->f_blocks = mbr.data_area_size;
@@ -726,6 +849,7 @@ static int fuse_sfs_statfs(const char* path, struct statvfs* stfs)
         stfs->f_fsid = *(mbr.magic_number);
         stfs->f_flag = 0;
         stfs->f_namemax = PATH_MAX;
+        index_unlock();
         return 0;
 }
 
@@ -817,7 +941,7 @@ int main(int argc, char* argv[]) {
         /* Disabling multi-threads operation helps to avoid race condition */
         nargv[2] = "-d";
         /* Enable foreground mode for saving value of semaphores */
-        //nargv[3] = " ";
+        //nargv[3] = "-s";
         imagefile = argv[optind];
         /*
          * Call FUSE
@@ -826,6 +950,4 @@ int main(int argc, char* argv[]) {
         free(nargv);
         return ret;
 }
-
-
 
