@@ -1,0 +1,513 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+ACCESS_FLAGS	fuse/main.c	38;"	d	file:
+ADD_OPER	fuse/main.c	43;"	d	file:
+AS_DFILE	include/sfs/fsutils.h	58;"	d
+AS_DFILE	include/sfs/fsutils.h	7;"	d
+AS_DFILE	lib/sfs/fixfs.c	11;"	d	file:
+AS_DFILE	lib/sfs/fsutils.c	455;"	d	file:
+AS_DFILE	lib/sfs/sfs_delete.c	11;"	d	file:
+AS_DFILE	lib/sfs/sfs_delete.c	41;"	d	file:
+AS_DFILE	lib/sfs/sfs_init.c	11;"	d	file:
+AS_DFILE	lib/sfs/sfs_truncate.c	11;"	d	file:
+AS_DFILE	lib/sfs/sfs_write.c	11;"	d	file:
+AS_DIR	lib/sfs/sfs_mkdir.c	10;"	d	file:
+AS_DIR	lib/sfs/sfs_mkdir.c	84;"	d	file:
+AS_DIR	lib/sfs/sfs_rmdir.c	11;"	d	file:
+AS_DIR	lib/sfs/sfs_rmdir.c	65;"	d	file:
+AS_FILE	lib/sfs/fsutils.c	454;"	d	file:
+AS_FILE	lib/sfs/sfs_creat.c	10;"	d	file:
+AS_FILE	lib/sfs/sfs_read.c	10;"	d	file:
+AS_FILE	lib/sfs/sfs_rename.c	10;"	d	file:
+AS_FILE	lib/sfs/sfs_truncate.c	10;"	d	file:
+AS_FILE	lib/sfs/sfs_unlink.c	11;"	d	file:
+AS_FILE	lib/sfs/sfs_unlink.c	38;"	d	file:
+AS_FILE	lib/sfs/sfs_write.c	10;"	d	file:
+BEGIN_POWER_OF_BS	include/mksfs/mksfs.h	13;"	d
+CUR	lib/sfs/alloc.c	11;"	d	file:
+CUR	lib/sfs/alloc.c	30;"	d	file:
+DEBUG_MSG_SIZE	lib/filedev.c	146;"	d	file:
+DEBUG_MSG_SIZE	lib/filedev.c	177;"	d	file:
+DEFAULT_BLOCK_SIZE	include/mksfs/mksfs.h	8;"	d
+DEFAULT_INDEX_PERCENT	include/mksfs/mksfs.h	10;"	d
+DEFAULT_MIN_BLOCK	include/mksfs/mksfs.h	9;"	d
+DEL_DIR_ENTRY	include/sfs/entry.h	/^        DEL_DIR_ENTRY  = 0x19,$/;"	e	enum:entry_type
+DEL_FILE_ENTRY	include/sfs/entry.h	/^        DEL_FILE_ENTRY = 0x1A$/;"	e	enum:entry_type
+DIR_ENTRY	include/sfs/entry.h	/^        DIR_ENTRY      = 0x11,$/;"	e	enum:entry_type
+DIR_ITER_TYPE	include/sfs/unit.h	/^        DIR_ITER_TYPE$/;"	e	enum:iter_types
+DO_OPER	fuse/main.c	49;"	d	file:
+D_ALIGNED	lib/sfs/utils.c	5;"	d	file:
+E2BIG	include/sfs/utils.h	61;"	d
+EACCES	include/sfs/utils.h	67;"	d
+EADDRINUSE	include/sfs/utils.h	155;"	d
+EADDRNOTAVAIL	include/sfs/utils.h	156;"	d
+EADV	include/sfs/utils.h	125;"	d
+EAFNOSUPPORT	include/sfs/utils.h	154;"	d
+EAGAIN	include/sfs/utils.h	65;"	d
+EALREADY	include/sfs/utils.h	171;"	d
+EBADE	include/sfs/utils.h	107;"	d
+EBADF	include/sfs/utils.h	63;"	d
+EBADFD	include/sfs/utils.h	134;"	d
+EBADMSG	include/sfs/utils.h	131;"	d
+EBADR	include/sfs/utils.h	108;"	d
+EBADRQC	include/sfs/utils.h	111;"	d
+EBADSLT	include/sfs/utils.h	112;"	d
+EBFONT	include/sfs/utils.h	116;"	d
+EBUSY	include/sfs/utils.h	70;"	d
+ECANCELED	include/sfs/utils.h	183;"	d
+ECHILD	include/sfs/utils.h	64;"	d
+ECHRNG	include/sfs/utils.h	99;"	d
+ECOMM	include/sfs/utils.h	127;"	d
+ECONNABORTED	include/sfs/utils.h	160;"	d
+ECONNREFUSED	include/sfs/utils.h	168;"	d
+ECONNRESET	include/sfs/utils.h	161;"	d
+EDEADLK	include/sfs/utils.h	90;"	d
+EDEADLOCK	include/sfs/utils.h	114;"	d
+EDESTADDRREQ	include/sfs/utils.h	146;"	d
+EDOM	include/sfs/utils.h	87;"	d
+EDOTDOT	include/sfs/utils.h	130;"	d
+EDQUOT	include/sfs/utils.h	179;"	d
+EEXIST	include/sfs/utils.h	71;"	d
+EFAULT	include/sfs/utils.h	68;"	d
+EFBIG	include/sfs/utils.h	81;"	d
+EHOSTDOWN	include/sfs/utils.h	169;"	d
+EHOSTUNREACH	include/sfs/utils.h	170;"	d
+EIDRM	include/sfs/utils.h	98;"	d
+EILSEQ	include/sfs/utils.h	141;"	d
+EINPROGRESS	include/sfs/utils.h	172;"	d
+EINTR	include/sfs/utils.h	58;"	d
+EINVAL	include/sfs/utils.h	76;"	d
+EIO	include/sfs/utils.h	59;"	d
+EISCONN	include/sfs/utils.h	163;"	d
+EISDIR	include/sfs/utils.h	75;"	d
+EISNAM	include/sfs/utils.h	177;"	d
+EKEYEXPIRED	include/sfs/utils.h	185;"	d
+EKEYREJECTED	include/sfs/utils.h	187;"	d
+EKEYREVOKED	include/sfs/utils.h	186;"	d
+EL2HLT	include/sfs/utils.h	106;"	d
+EL2NSYNC	include/sfs/utils.h	100;"	d
+EL3HLT	include/sfs/utils.h	101;"	d
+EL3RST	include/sfs/utils.h	102;"	d
+ELIBACC	include/sfs/utils.h	136;"	d
+ELIBBAD	include/sfs/utils.h	137;"	d
+ELIBEXEC	include/sfs/utils.h	140;"	d
+ELIBMAX	include/sfs/utils.h	139;"	d
+ELIBSCN	include/sfs/utils.h	138;"	d
+ELNRNG	include/sfs/utils.h	103;"	d
+ELOOP	include/sfs/utils.h	95;"	d
+EMEDIUMTYPE	include/sfs/utils.h	182;"	d
+EMFILE	include/sfs/utils.h	78;"	d
+EMLINK	include/sfs/utils.h	85;"	d
+EMSGSIZE	include/sfs/utils.h	147;"	d
+EMULTIHOP	include/sfs/utils.h	129;"	d
+ENAMETOOLONG	include/sfs/utils.h	91;"	d
+ENAVAIL	include/sfs/utils.h	176;"	d
+ENETDOWN	include/sfs/utils.h	157;"	d
+ENETRESET	include/sfs/utils.h	159;"	d
+ENETUNREACH	include/sfs/utils.h	158;"	d
+ENFILE	include/sfs/utils.h	77;"	d
+ENOANO	include/sfs/utils.h	110;"	d
+ENOBUFS	include/sfs/utils.h	162;"	d
+ENOCSI	include/sfs/utils.h	105;"	d
+ENODATA	include/sfs/utils.h	118;"	d
+ENODEV	include/sfs/utils.h	73;"	d
+ENOENT	include/sfs/utils.h	56;"	d
+ENOEXEC	include/sfs/utils.h	62;"	d
+ENOKEY	include/sfs/utils.h	184;"	d
+ENOLCK	include/sfs/utils.h	92;"	d
+ENOLINK	include/sfs/utils.h	124;"	d
+ENOMEDIUM	include/sfs/utils.h	181;"	d
+ENOMEM	include/sfs/utils.h	66;"	d
+ENOMSG	include/sfs/utils.h	97;"	d
+ENONET	include/sfs/utils.h	121;"	d
+ENOPKG	include/sfs/utils.h	122;"	d
+ENOPROTOOPT	include/sfs/utils.h	149;"	d
+ENOSPC	include/sfs/utils.h	82;"	d
+ENOSR	include/sfs/utils.h	120;"	d
+ENOSTR	include/sfs/utils.h	117;"	d
+ENOSYS	include/sfs/utils.h	93;"	d
+ENOTBLK	include/sfs/utils.h	69;"	d
+ENOTCONN	include/sfs/utils.h	164;"	d
+ENOTDIR	include/sfs/utils.h	74;"	d
+ENOTEMPTY	include/sfs/utils.h	94;"	d
+ENOTNAM	include/sfs/utils.h	175;"	d
+ENOTRECOVERABLE	include/sfs/utils.h	191;"	d
+ENOTSOCK	include/sfs/utils.h	145;"	d
+ENOTTY	include/sfs/utils.h	79;"	d
+ENOTUNIQ	include/sfs/utils.h	133;"	d
+ENXIO	include/sfs/utils.h	60;"	d
+EOPNOTSUPP	include/sfs/utils.h	152;"	d
+EOVERFLOW	include/sfs/utils.h	132;"	d
+EOWNERDEAD	include/sfs/utils.h	190;"	d
+EPERM	include/sfs/utils.h	55;"	d
+EPFNOSUPPORT	include/sfs/utils.h	153;"	d
+EPIPE	include/sfs/utils.h	86;"	d
+EPROTO	include/sfs/utils.h	128;"	d
+EPROTONOSUPPORT	include/sfs/utils.h	150;"	d
+EPROTOTYPE	include/sfs/utils.h	148;"	d
+ERANGE	include/sfs/utils.h	88;"	d
+EREMCHG	include/sfs/utils.h	135;"	d
+EREMOTE	include/sfs/utils.h	123;"	d
+EREMOTEIO	include/sfs/utils.h	178;"	d
+ERESTART	include/sfs/utils.h	142;"	d
+EROFS	include/sfs/utils.h	84;"	d
+ESHUTDOWN	include/sfs/utils.h	165;"	d
+ESOCKTNOSUPPORT	include/sfs/utils.h	151;"	d
+ESPIPE	include/sfs/utils.h	83;"	d
+ESRCH	include/sfs/utils.h	57;"	d
+ESRMNT	include/sfs/utils.h	126;"	d
+ESTALE	include/sfs/utils.h	173;"	d
+ESTRPIPE	include/sfs/utils.h	143;"	d
+ETIME	include/sfs/utils.h	119;"	d
+ETIMEDOUT	include/sfs/utils.h	167;"	d
+ETOOMANYREFS	include/sfs/utils.h	166;"	d
+ETXTBSY	include/sfs/utils.h	80;"	d
+EUCLEAN	include/sfs/utils.h	174;"	d
+EUNATCH	include/sfs/utils.h	104;"	d
+EUSERS	include/sfs/utils.h	144;"	d
+EWOULDBLOCK	include/sfs/utils.h	96;"	d
+EXDEV	include/sfs/utils.h	72;"	d
+EXFULL	include/sfs/utils.h	109;"	d
+EXIT_BSDGR2	include/mksfs/mksfs.h	/^        EXIT_BSDGR2 = EXIT_FAILURE + 9,$/;"	e	enum:exit_codes
+EXIT_BSDIV	include/mksfs/mksfs.h	/^        EXIT_BSDIV = EXIT_FAILURE + 8,$/;"	e	enum:exit_codes
+EXIT_BSLRG	include/mksfs/mksfs.h	/^        EXIT_BSLRG = EXIT_FAILURE + 7,$/;"	e	enum:exit_codes
+EXIT_FILELRG	include/mksfs/mksfs.h	/^        EXIT_FILELRG = EXIT_FAILURE + 4,$/;"	e	enum:exit_codes
+EXIT_INPFILE	include/mksfs/mksfs.h	/^        EXIT_INPFILE = EXIT_FAILURE + 1,$/;"	e	enum:exit_codes
+EXIT_LBL	include/mksfs/mksfs.h	/^        EXIT_LBL = EXIT_FAILURE + 10$/;"	e	enum:exit_codes
+EXIT_MDLRG	include/mksfs/mksfs.h	/^        EXIT_MDLRG = EXIT_FAILURE + 3,$/;"	e	enum:exit_codes
+EXIT_MDSML	include/mksfs/mksfs.h	/^        EXIT_MDSML = EXIT_FAILURE + 5,$/;"	e	enum:exit_codes
+EXIT_NOBS	include/mksfs/mksfs.h	/^        EXIT_NOBS = EXIT_FAILURE + 6,$/;"	e	enum:exit_codes
+EXIT_NOMD	include/mksfs/mksfs.h	/^        EXIT_NOMD = EXIT_FAILURE + 2,$/;"	e	enum:exit_codes
+FDEV	lib/filedev.c	13;"	d	file:
+FDEV	lib/filedev.c	143;"	d	file:
+FILE_ENTRY	include/sfs/entry.h	/^        FILE_ENTRY     = 0x12,$/;"	e	enum:entry_type
+FILE_ITER_TYPE	include/sfs/unit.h	/^        FILE_ITER_TYPE = 1,$/;"	e	enum:iter_types
+FIRST_DIR_NAME_SIZE	include/sfs/entry.h	11;"	d
+FIRST_FILE_NAME_SIZE	include/sfs/entry.h	10;"	d
+FUSE_USE_VERSION	fuse/main.c	8;"	d	file:
+GET_ERRNO	include/sfs/utils.h	194;"	d
+GET_ERRNO	include/sfs/utils.h	200;"	d
+INDEX_ENTRY_SIZE	include/sfs/entry.h	8;"	d
+INDEX_MIN_SIZE	include/mksfs/mksfs.h	14;"	d
+INODE_H	include/fuse/inode.h	2;"	d
+INODE_MAP_DEFAULT_SIZE	include/fuse/inode.h	10;"	d
+IO_TRACE	include/sfs/debug.h	17;"	d
+IO_TRACE	include/sfs/debug.h	23;"	d
+LOCK_IMAGE_SEM	fuse/main.c	36;"	d	file:
+MAX_DIR_PATH	include/sfs/entry.h	5;"	d
+MAX_FILE_PATH	include/sfs/entry.h	6;"	d
+MAX_OPER_NUM	fuse/main.c	39;"	d	file:
+MAX_VOL_LABEL	include/sfs/entry.h	7;"	d
+MBR_SIZE	include/mksfs/mksfs.h	11;"	d
+MIN_NUM_ENTRY	include/mksfs/mksfs.h	12;"	d
+MKSFS_H	include/mksfs/mksfs.h	2;"	d
+NEXT_DEL	include/sfs/fsutils.h	43;"	d
+NUM_OF_FUSE_OPTIONS	fuse/main.c	67;"	d	file:
+P	fuse/main.c	56;"	d	file:
+PREV_DEL	include/sfs/fsutils.h	44;"	d
+SEM_NUM	fuse/main.c	37;"	d	file:
+SET_ERRNO	include/sfs/utils.h	193;"	d
+SET_ERRNO	include/sfs/utils.h	199;"	d
+SFS_ERRNO	include/sfs/utils.h	7;"	d
+SFS_TRACE	include/sfs/debug.h	13;"	d
+SFS_TRACE	include/sfs/debug.h	7;"	d
+START	lib/sfs/alloc.c	12;"	d	file:
+START	lib/sfs/alloc.c	31;"	d	file:
+START_ENTRY	include/sfs/entry.h	/^        START_ENTRY    = 0x02,$/;"	e	enum:entry_type
+UNUSABLE_ENTRY	include/sfs/entry.h	/^        UNUSABLE_ENTRY = 0x18,$/;"	e	enum:entry_type
+UNUSED_ENTRY	include/sfs/entry.h	/^        UNUSED_ENTRY   = 0x10,$/;"	e	enum:entry_type
+V	fuse/main.c	55;"	d	file:
+VOLUME_NAME_SIZE	include/mksfs/mksfs.h	7;"	d
+VOL_IDENT	include/sfs/entry.h	/^        VOL_IDENT      = 0x01,$/;"	e	enum:entry_type
+W_ALIGNED	lib/sfs/utils.c	6;"	d	file:
+ZW	fuse/main.c	57;"	d	file:
+_ALLOC_SFS_	include/sfs/alloc.h	2;"	d
+_BDEV_BLOCKDEV_	include/bdev/blockdev.h	2;"	d
+_BDEV_DEFINES_	include/bdev/defines.h	2;"	d
+_BDEV_FILEDEV_	include/bdev/filedev.h	2;"	d
+_DEFS_SFS_	include/sfs/defs.h	2;"	d
+_GNU_SOURCE	mksfs/main.c	1;"	d	file:
+_SFS_CALLBACK_	include/sfs/callback.h	2;"	d
+_SFS_DEBUG_	include/sfs/debug.h	2;"	d
+_SFS_ENTRY_	include/sfs/entry.h	2;"	d
+_SFS_FSUTILS_	include/sfs/fsutils.h	2;"	d
+_SFS_IO_	include/sfs/io.h	2;"	d
+_SFS_MBR_	include/sfs/mbr.h	2;"	d
+_SFS_UNIT_	include/sfs/unit.h	2;"	d
+_SFS_UTILS_	include/sfs/utils.h	2;"	d
+__FIXFS__	include/sfs/fixfs.h	2;"	d
+__STATFS__	include/sfs/statfs.h	2;"	d
+alloc_entry	lib/sfs/alloc.c	/^off_t alloc_entry(sfs_unit* fs, entry* entr, int n)$/;"	f
+alloc_space	lib/sfs/alloc.c	/^off_t alloc_space(sfs_unit* fs, size_t size, entry* entr)$/;"	f
+bdev	include/sfs/unit.h	/^        blockdev* bdev;$/;"	m	struct:__anon13
+block_dev_t	include/bdev/blockdev.h	/^struct block_dev_t {$/;"	s
+block_size	include/bdev/blockdev.h	/^        size_t block_size;$/;"	m	struct:block_dev_t
+block_size	include/mksfs/mksfs.h	/^        size_t block_size;$/;"	m	struct:sfs_options
+block_size	include/sfs/mbr.h	/^        uint8_t  block_size;              \/* Bytes per block = $/;"	m	struct:mbr_t
+blockdev	include/bdev/blockdev.h	/^typedef struct block_dev_t blockdev;$/;"	t	typeref:struct:block_dev_t
+blockdev_init	include/bdev/blockdev.h	/^inline static int blockdev_init(blockdev* bdev)$/;"	f
+bnum_t	include/bdev/defines.h	/^typedef size_t   bnum_t;$/;"	t
+buf	include/bdev/blockdev.h	/^        buf_t* buf;$/;"	m	struct:block_dev_t
+buf_num	include/bdev/blockdev.h	/^        bnum_t buf_num;        \/* Number of block in buffer *\/$/;"	m	struct:block_dev_t
+buf_t	include/bdev/defines.h	/^typedef uint8_t  buf_t;$/;"	t
+c_size	include/fuse/inode.h	/^        size_t c_size;$/;"	m	struct:__anon2
+calc_checksum	lib/sfs/utils.c	/^uint8_t calc_checksum(uint8_t* mag_num, uint8_t* sfs_v, uint64_t* tot_size, $/;"	f
+check_dirs	lib/sfs/fsutils.c	/^int check_dirs(sfs_unit* fs, char* filepath, entry* entr)$/;"	f
+check_file_mask	lib/sfs/fsutils.c	/^static int check_file_mask(sfs_unit* fs, entry* entr, $/;"	f	file:
+checksum	include/sfs/mbr.h	/^        uint8_t  checksum;$/;"	m	struct:mbr_t
+clr_openbit	include/fuse/inode.h	/^static inline int clr_openbit(vino_t vino)$/;"	f
+cont_entries	include/sfs/entry.h	/^        uint8_t cont_entries;$/;"	m	struct:__anon10
+cont_entries	include/sfs/entry.h	/^        uint8_t cont_entries;$/;"	m	struct:__anon11
+cont_entries	include/sfs/entry.h	/^        uint8_t cont_entries;$/;"	m	struct:__anon7
+cont_entries	include/sfs/entry.h	/^        uint8_t cont_entries;$/;"	m	struct:__anon8
+cont_entry	include/sfs/entry.h	/^} __attribute__((packed)) cont_entry;$/;"	t	typeref:struct:__anon12
+convert_size	mksfs/main.c	/^static size_t convert_size(char* parameter, off_t file_s) $/;"	f	file:
+copy_block	lib/sfs/io.c	/^int copy_block(blockdev* dev, off_t src, off_t dest, size_t size) $/;"	f
+count_entry	lib/sfs/sfs_creat.c	/^static inline uint8_t count_entry(size_t len)$/;"	f	file:
+count_entry	lib/sfs/sfs_mkdir.c	/^static inline uint8_t count_entry(size_t len)$/;"	f	file:
+count_entry	lib/sfs/sfs_rename.c	/^static inline uint8_t count_entry(size_t len)$/;"	f	file:
+count_space	lib/sfs/statfs.c	/^static int count_space(sfs_unit* fs, entry* entr, off_t entry_off, void* data)$/;"	f	file:
+count_unused_entry	lib/sfs/statfs.c	/^static int count_unused_entry(sfs_unit* fs, entry* entr, $/;"	f	file:
+cur	lib/sfs/alloc.c	/^        int cur;$/;"	m	struct:pair	file:
+cur_off	include/sfs/unit.h	/^        off_t cur_off;$/;"	m	struct:__anon14
+data	include/sfs/entry.h	/^        uint8_t data[INDEX_ENTRY_SIZE - 1];$/;"	m	struct:__anon3
+data_area_size	include/sfs/mbr.h	/^        uint64_t data_area_size;          \/* In blocks *\/$/;"	m	struct:mbr_t
+data_size	include/mksfs/mksfs.h	/^        size_t data_size;$/;"	m	struct:sfs_options
+del_begin	include/sfs/unit.h	/^        off_t del_begin;$/;"	m	struct:__anon13
+del_dir_entry	include/sfs/entry.h	/^} __attribute__((packed)) del_dir_entry;$/;"	t	typeref:struct:__anon10
+del_file_entry	include/sfs/entry.h	/^} __attribute__((packed)) del_file_entry;$/;"	t	typeref:struct:__anon11
+del_file_list_add	lib/sfs/fsutils.c	/^int del_file_list_add(sfs_unit* fs, entry* entr, uint64_t start, uint64_t end)$/;"	f
+del_file_list_alloc	lib/sfs/fsutils.c	/^off_t del_file_list_alloc(sfs_unit* fs, entry* entr, size_t size)$/;"	f
+del_file_list_remove	lib/sfs/fsutils.c	/^static int del_file_list_remove(sfs_unit* fs, off_t off, entry* entr)$/;"	f	file:
+del_next	include/sfs/fsutils.h	/^static inline off_t del_next(sfs_unit* fs, entry* entr)$/;"	f
+del_start	include/sfs/entry.h	/^        uint64_t del_start;$/;"	m	struct:__anon5
+dev_data	include/bdev/blockdev.h	/^        void* dev_data;        \/* Specific data dri device *\/$/;"	m	struct:block_dev_t
+dir_entry	include/sfs/entry.h	/^} __attribute__((packed)) dir_entry;$/;"	t	typeref:struct:__anon7
+dir_name	include/sfs/entry.h	/^        uint8_t dir_name[54];$/;"	m	struct:__anon10
+dir_name	include/sfs/entry.h	/^        uint8_t dir_name[54];$/;"	m	struct:__anon7
+diriter	include/sfs/unit.h	/^} diriter;$/;"	t	typeref:struct:__anon14
+dirty	include/fuse/inode.h	/^        int dirty;$/;"	m	struct:__anon1
+end_block	include/sfs/entry.h	/^        uint64_t end_block;$/;"	m	struct:__anon11
+end_block	include/sfs/entry.h	/^        uint64_t end_block;$/;"	m	struct:__anon8
+end_block	include/sfs/entry.h	/^        uint64_t end_block;$/;"	m	struct:__anon9
+end_checksum	include/sfs/mbr.h	6;"	d
+entry	include/sfs/entry.h	/^} __attribute__((packed)) entry;$/;"	t	typeref:struct:__anon3
+entry_parse	lib/sfs/callback.c	/^off_t entry_parse(sfs_unit* fs, $/;"	f
+entry_start	include/sfs/unit.h	/^        off_t entry_start;$/;"	m	struct:__anon13
+entry_type	include/sfs/entry.h	/^        uint8_t entry_type; $/;"	m	struct:__anon4
+entry_type	include/sfs/entry.h	/^        uint8_t entry_type;$/;"	m	struct:__anon10
+entry_type	include/sfs/entry.h	/^        uint8_t entry_type;$/;"	m	struct:__anon11
+entry_type	include/sfs/entry.h	/^        uint8_t entry_type;$/;"	m	struct:__anon3
+entry_type	include/sfs/entry.h	/^        uint8_t entry_type;$/;"	m	struct:__anon5
+entry_type	include/sfs/entry.h	/^        uint8_t entry_type;$/;"	m	struct:__anon6
+entry_type	include/sfs/entry.h	/^        uint8_t entry_type;$/;"	m	struct:__anon7
+entry_type	include/sfs/entry.h	/^        uint8_t entry_type;$/;"	m	struct:__anon8
+entry_type	include/sfs/entry.h	/^        uint8_t entry_type;$/;"	m	struct:__anon9
+entry_type	include/sfs/entry.h	/^enum entry_type {$/;"	g
+exit_codes	include/mksfs/mksfs.h	/^enum exit_codes {$/;"	g
+fd	include/bdev/filedev.h	/^        int fd;                 $/;"	m	struct:filedev_data_t
+file_entry	include/sfs/entry.h	/^} __attribute__((packed)) file_entry;$/;"	t	typeref:struct:__anon8
+file_name	include/mksfs/mksfs.h	/^        char* file_name;$/;"	m	struct:sfs_options
+file_shrink	lib/sfs/fsutils.c	/^int file_shrink(sfs_unit* fs, off_t off, size_t new_size, entry* entr)$/;"	f
+file_t	include/fuse/inode.h	/^} file_t;$/;"	t	typeref:struct:__anon1
+filedev_create	lib/filedev.c	/^blockdev* filedev_create(blockdev* bdev, filedev_data* fdev, $/;"	f
+filedev_data	include/bdev/filedev.h	/^} filedev_data;$/;"	t	typeref:struct:filedev_data_t
+filedev_data_t	include/bdev/filedev.h	/^typedef struct filedev_data_t {$/;"	s
+filedev_dump	lib/filedev.c	/^int filedev_dump(blockdev* fdev, int fd)$/;"	f
+filedev_init	lib/filedev.c	/^static int filedev_init(blockdev* bdev) $/;"	f	file:
+filedev_read	lib/filedev.c	/^static size_t filedev_read(blockdev* bdev, buf_t* buf, $/;"	f	file:
+filedev_release	lib/filedev.c	/^static int filedev_release(blockdev* bdev) $/;"	f	file:
+filedev_write	lib/filedev.c	/^static size_t filedev_write(blockdev* bdev, buf_t* buf, $/;"	f	file:
+filename	include/bdev/filedev.h	/^        char* filename;$/;"	m	struct:filedev_data_t
+filename	include/sfs/unit.h	/^        char* filename;$/;"	m	struct:__anon14
+fix_del_file	lib/sfs/fixfs.c	/^static int fix_del_file(sfs_unit* fs, entry* entr, off_t entry_off, void* data)$/;"	f	file:
+fix_non_del_file	lib/sfs/fixfs.c	/^int fix_non_del_file(sfs_unit* fs, entry* entr)$/;"	f
+flag_t	include/sfs/defs.h	/^typedef uint64_t flag_t;$/;"	t
+free_entry	lib/sfs/alloc.c	/^int free_entry(sfs_unit* fs, entry* entr, off_t entr_off, int n)$/;"	f
+free_one_entry	lib/sfs/alloc.c	/^static int free_one_entry(sfs_unit* fs, entry* entr, off_t entr_off)$/;"	f	file:
+fuse_sfs_chmod	fuse/main.c	/^static int fuse_sfs_chmod(const char* path, mode_t mode)$/;"	f	file:
+fuse_sfs_chown	fuse/main.c	/^static int fuse_sfs_chown(const char* path, uid_t uid, gid_t gid)$/;"	f	file:
+fuse_sfs_destroy	fuse/main.c	/^static void fuse_sfs_destroy(void* param)$/;"	f	file:
+fuse_sfs_flush	fuse/main.c	/^static int fuse_sfs_flush(const char *path, struct fuse_file_info* fi)$/;"	f	file:
+fuse_sfs_ftruncate	fuse/main.c	/^static int fuse_sfs_ftruncate(const char* path, off_t length, $/;"	f	file:
+fuse_sfs_getattr	fuse/main.c	/^static int fuse_sfs_getattr(const char* path, struct stat *stbuf) $/;"	f	file:
+fuse_sfs_init	fuse/main.c	/^static void* fuse_sfs_init()$/;"	f	file:
+fuse_sfs_mkdir	fuse/main.c	/^static int fuse_sfs_mkdir(const char* path, mode_t mode)$/;"	f	file:
+fuse_sfs_mknod	fuse/main.c	/^static int fuse_sfs_mknod(const char* path, mode_t mode, dev_t rdev) $/;"	f	file:
+fuse_sfs_open	fuse/main.c	/^static int fuse_sfs_open(const char* path, struct fuse_file_info* fi)$/;"	f	file:
+fuse_sfs_opendir	fuse/main.c	/^static int fuse_sfs_opendir(const char* path, struct fuse_file_info* fi)$/;"	f	file:
+fuse_sfs_read	fuse/main.c	/^static int fuse_sfs_read(const char* path, char *buf, size_t size, $/;"	f	file:
+fuse_sfs_readdir	fuse/main.c	/^static int fuse_sfs_readdir(const char* path, void* buf, $/;"	f	file:
+fuse_sfs_release	fuse/main.c	/^static int fuse_sfs_release(const char* path, struct fuse_file_info* fi)$/;"	f	file:
+fuse_sfs_releasedir	fuse/main.c	/^static int fuse_sfs_releasedir(const char* path, struct fuse_file_info* fi)$/;"	f	file:
+fuse_sfs_rename	fuse/main.c	/^static int fuse_sfs_rename(const char* from, const char* to)$/;"	f	file:
+fuse_sfs_rmdir	fuse/main.c	/^static int fuse_sfs_rmdir(const char* path)$/;"	f	file:
+fuse_sfs_statfs	fuse/main.c	/^static int fuse_sfs_statfs(const char* path, struct statvfs* stfs)$/;"	f	file:
+fuse_sfs_truncate	fuse/main.c	/^static int fuse_sfs_truncate(const char* path, off_t length) $/;"	f	file:
+fuse_sfs_unlink	fuse/main.c	/^static int fuse_sfs_unlink(const char* path)$/;"	f	file:
+fuse_sfs_utime	fuse/main.c	/^static int fuse_sfs_utime(const char* path, struct utimbuf* buf)$/;"	f	file:
+fuse_sfs_write	fuse/main.c	/^static int fuse_sfs_write(const char* path, const char *buf, size_t size, $/;"	f	file:
+get_dirty	include/fuse/inode.h	/^static inline int get_dirty(vino_t vino) $/;"	f
+get_openbit	include/fuse/inode.h	/^static inline int get_openbit(vino_t vino) {$/;"	f
+get_pino	include/fuse/inode.h	/^static inline pino_t get_pino(vino_t vino) $/;"	f
+get_real_size	include/sfs/fsutils.h	/^static inline size_t get_real_size(sfs_unit* fs, size_t size)$/;"	f
+get_size	include/sfs/fsutils.h	/^static inline size_t get_size(sfs_unit* fs, entry* entr) $/;"	f
+get_time	lib/filedev.c	/^uint64_t get_time() {$/;"	f
+get_vino	fuse/inode.c	/^vino_t get_vino(pino_t pino) $/;"	f
+image_create	lib/mksfs.c	/^int image_create(struct sfs_options sfs_opts) $/;"	f
+imagefile	fuse/main.c	/^static char* imagefile = NULL;$/;"	v	file:
+index_area_size	include/sfs/mbr.h	/^        uint64_t index_area_size;         \/* In bytes *\/$/;"	m	struct:mbr_t
+index_lock	fuse/main.c	/^static pthread_rwlock_t index_lock;$/;"	v	file:
+index_lock_destroy	fuse/main.c	/^static inline int index_lock_destroy() {$/;"	f	file:
+index_lock_init	fuse/main.c	/^static inline int index_lock_init() {$/;"	f	file:
+index_rdlock	fuse/main.c	/^static inline void index_rdlock() {$/;"	f	file:
+index_size	include/mksfs/mksfs.h	/^        size_t index_size;$/;"	m	struct:sfs_options
+index_unlock	fuse/main.c	/^static inline void index_unlock() {$/;"	f	file:
+index_wrlock	fuse/main.c	/^static inline void index_wrlock() {$/;"	f	file:
+init	include/bdev/blockdev.h	/^        int (*init) (struct block_dev_t* dev);$/;"	m	struct:block_dev_t
+inode_lock_destroy	fuse/inode.c	/^static int inode_lock_destroy(vino_t vino) $/;"	f	file:
+inode_lock_init	fuse/inode.c	/^static int inode_lock_init(vino_t vino) $/;"	f	file:
+inode_map	fuse/inode.c	/^inode_map_t* inode_map = NULL;$/;"	v
+inode_map_create	fuse/inode.c	/^int inode_map_create(void) $/;"	f
+inode_map_delete	fuse/inode.c	/^int inode_map_delete(void) $/;"	f
+inode_map_dump	fuse/inode.c	/^int inode_map_dump(void) $/;"	f
+inode_map_lock_destroy	fuse/inode.c	/^static int inode_map_lock_destroy() $/;"	f	file:
+inode_map_lock_init	fuse/inode.c	/^static int inode_map_lock_init() $/;"	f	file:
+inode_map_rdlock	include/fuse/inode.h	/^static inline void inode_map_rdlock() $/;"	f
+inode_map_resize	fuse/inode.c	/^static int inode_map_resize(void) $/;"	f	file:
+inode_map_t	include/fuse/inode.h	/^} inode_map_t;$/;"	t	typeref:struct:__anon2
+inode_map_unlock	include/fuse/inode.h	/^static inline void inode_map_unlock() $/;"	f
+inode_map_wrlock	include/fuse/inode.h	/^static inline void inode_map_wrlock() $/;"	f
+inode_rdlock	include/fuse/inode.h	/^static inline void inode_rdlock(vino_t vino) $/;"	f
+inode_table	include/fuse/inode.h	/^        file_t* inode_table;$/;"	m	struct:__anon2
+inode_unlock	include/fuse/inode.h	/^static inline void inode_unlock(vino_t vino) $/;"	f
+inode_wrlock	include/fuse/inode.h	/^static inline void inode_wrlock(vino_t vino) $/;"	f
+is_correct_char	include/sfs/utils.h	/^inline static int is_correct_char(unsigned char c) $/;"	f
+is_correct_dirpath	lib/sfs/utils.c	/^int is_correct_dirpath(const char* string) $/;"	f
+is_correct_filepath	lib/sfs/utils.c	/^int is_correct_filepath(const char* string) $/;"	f
+is_correct_label	lib/sfs/utils.c	/^int is_correct_label(const char* string) $/;"	f
+is_correct_string	lib/sfs/utils.c	/^int is_correct_string(const char* string, size_t length) $/;"	f
+is_leaf	lib/sfs/sfs_readdir.c	/^static int is_leaf(char* path) {$/;"	f	file:
+iter_types	include/sfs/unit.h	/^enum iter_types {$/;"	g
+label	include/mksfs/mksfs.h	/^        char label[VOLUME_NAME_SIZE];$/;"	m	struct:sfs_options
+len	include/sfs/unit.h	/^        size_t len;$/;"	m	struct:__anon14
+lock	include/fuse/inode.h	/^        pthread_rwlock_t lock;$/;"	m	struct:__anon1
+lock	include/fuse/inode.h	/^        pthread_rwlock_t lock;$/;"	m	struct:__anon2
+magic_number	include/sfs/mbr.h	/^        uint8_t  magic_number[3];         \/* 0x534653 (SFS in ASCII) *\/$/;"	m	struct:mbr_t
+main	fuse/main.c	/^int main(int argc, char* argv[]) {$/;"	f
+main	mksfs/main.c	/^int main(int argc, char* argv[]) {$/;"	f
+max_vino	include/fuse/inode.h	/^        vino_t max_vino;$/;"	m	struct:__anon2
+mbr_t	include/sfs/mbr.h	/^struct mbr_t {$/;"	s
+memcpy	lib/sfs/utils.c	/^uint8_t* memcpy(void* dst, void* src, size_t size)$/;"	f
+memset	lib/sfs/utils.c	/^void* memset(void* dst, int c, size_t size)$/;"	f
+name	include/sfs/entry.h	/^        uint8_t name[30];$/;"	m	struct:__anon11
+name	include/sfs/entry.h	/^        uint8_t name[30];$/;"	m	struct:__anon8
+name	include/sfs/entry.h	/^        uint8_t name[64];$/;"	m	struct:__anon12
+new_path	fuse/main.c	/^static inline char* new_path(const char* path) $/;"	f	file:
+off	include/sfs/unit.h	/^        off_t off;$/;"	m	struct:__anon15
+openbit	include/fuse/inode.h	/^        int openbit;$/;"	m	struct:__anon1
+pair	lib/sfs/alloc.c	/^struct pair {$/;"	s	file:
+pino	include/fuse/inode.h	/^        pino_t pino;$/;"	m	struct:__anon1
+pino_add	fuse/inode.c	/^vino_t pino_add(pino_t pino) $/;"	f
+pino_t	include/fuse/inode.h	/^typedef uint64_t pino_t;$/;"	t
+read	include/bdev/blockdev.h	/^        size_t (*read) (struct block_dev_t* dev, buf_t* buf,$/;"	m	struct:block_dev_t
+read_data	lib/sfs/io.c	/^size_t read_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)$/;"	f
+read_dir_entry	lib/sfs/fsutils.c	/^static int read_dir_entry(sfs_unit* fs, entry* entr, $/;"	f	file:
+read_dir_name	lib/sfs/fsutils.c	/^int read_dir_name(sfs_unit* fs, dir_entry* entr, $/;"	f
+read_entry	lib/sfs/io.c	/^size_t read_entry(blockdev* dev, off_t offset, entry* entry)$/;"	f
+read_file_entry	lib/sfs/fsutils.c	/^static int read_file_entry(sfs_unit* fs, entry* entr, $/;"	f	file:
+read_file_name	lib/sfs/fsutils.c	/^int read_file_name(sfs_unit* fs, file_entry* entr, $/;"	f
+release	include/bdev/blockdev.h	/^        int (*release) (struct block_dev_t* dev);$/;"	m	struct:block_dev_t
+reserved	include/sfs/entry.h	/^        uint8_t reserved[38];$/;"	m	struct:__anon9
+reserved	include/sfs/entry.h	/^        uint8_t reserved[3]; $/;"	m	struct:__anon4
+reserved	include/sfs/entry.h	/^        uint8_t reserved[55];$/;"	m	struct:__anon5
+reserved	include/sfs/entry.h	/^        uint8_t reserved[63];$/;"	m	struct:__anon6
+reserved_boot_code	include/sfs/mbr.h	/^        uint8_t  reserved_boot_code[404];$/;"	m	struct:mbr_t
+reserved_part_table	include/sfs/mbr.h	/^        uint8_t  reserved_part_table[66];$/;"	m	struct:mbr_t
+reserved_size	include/mksfs/mksfs.h	/^        size_t reserved_size;$/;"	m	struct:sfs_options
+reserved_size	include/sfs/mbr.h	/^        uint32_t reserved_size;           \/* In blocks *\/$/;"	m	struct:mbr_t
+scan_del_file_list	lib/sfs/statfs.c	/^size_t scan_del_file_list(sfs_unit* fs, entry* entr)$/;"	f
+scan_free_inode	lib/sfs/statfs.c	/^size_t scan_free_inode(sfs_unit* fs, entry* entr)$/;"	f
+scan_used_space	lib/sfs/statfs.c	/^size_t scan_used_space(sfs_unit* fs, entry* entr)$/;"	f
+search_begin	lib/sfs/sfs_init.c	/^static int search_begin(sfs_unit* fs, entry* entr, off_t entry_off, void* data)$/;"	f	file:
+search_del_space	lib/sfs/alloc.c	/^static int search_del_space(sfs_unit* fs, entry* entr, $/;"	f	file:
+search_dir	lib/sfs/fsutils.c	/^off_t search_dir(sfs_unit* fs, char* filepath, entry* entr)$/;"	f
+search_file	lib/sfs/fsutils.c	/^off_t search_file(sfs_unit* fs, char* filepath, entry* entr)$/;"	f
+search_file_mask	lib/sfs/fsutils.c	/^off_t search_file_mask(sfs_unit* fs, char* filepath, $/;"	f
+search_free_entry	lib/sfs/alloc.c	/^static int search_free_entry(sfs_unit* fs, entry* entr, $/;"	f	file:
+sem_ops	fuse/main.c	/^struct sembuf sem_ops[MAX_OPER_NUM];$/;"	v	typeref:struct:sembuf
+set_dirty	include/fuse/inode.h	/^static inline int set_dirty(vino_t vino) $/;"	f
+set_openbit	include/fuse/inode.h	/^static inline int set_openbit(vino_t vino)$/;"	f
+set_pino	include/fuse/inode.h	/^static inline int set_pino(vino_t vino, pino_t new_pino) $/;"	f
+sfs_attr	include/sfs/unit.h	/^} sfs_attr;$/;"	t	typeref:struct:__anon15
+sfs_creat	lib/sfs/sfs_creat.c	/^int sfs_creat(sfs_unit* fs, const char* filepath)$/;"	f
+sfs_delete	lib/sfs/sfs_delete.c	/^int sfs_delete(sfs_unit* fs, off_t file)$/;"	f
+sfs_description	fuse/main.c	/^sfs_unit* sfs_description = NULL;$/;"	v
+sfs_errno	lib/sfs/utils.c	/^int sfs_errno = 0;$/;"	v
+sfs_getattr	lib/sfs/sfs_getattr.c	/^int sfs_getattr(sfs_unit* fs, off_t file, sfs_attr* attr)$/;"	f
+sfs_init	lib/sfs/sfs_init.c	/^int sfs_init(sfs_unit* fs, blockdev* bdev)$/;"	f
+sfs_mkdir	lib/sfs/sfs_mkdir.c	/^int sfs_mkdir(sfs_unit* fs, const char* dirpath)$/;"	f
+sfs_open	lib/sfs/sfs_open.c	/^off_t sfs_open(sfs_unit* fs, const char* filepath)$/;"	f
+sfs_oper	fuse/main.c	/^static struct fuse_operations sfs_oper = {$/;"	v	typeref:struct:fuse_operations	file:
+sfs_options	include/mksfs/mksfs.h	/^struct sfs_options {$/;"	s
+sfs_read	lib/sfs/sfs_read.c	/^ssize_t sfs_read(sfs_unit* fs, off_t file, $/;"	f
+sfs_readdir	lib/sfs/sfs_readdir.c	/^int sfs_readdir(sfs_unit* fs, diriter* iter)$/;"	f
+sfs_release	lib/sfs/sfs_release.c	/^int sfs_release(sfs_unit* fs)$/;"	f
+sfs_rename	lib/sfs/sfs_rename.c	/^off_t sfs_rename(sfs_unit* fs, off_t file, const char* newpath)$/;"	f
+sfs_rmdir	lib/sfs/sfs_rmdir.c	/^int sfs_rmdir(sfs_unit* fs, const char* dirpath)$/;"	f
+sfs_truncate	lib/sfs/sfs_truncate.c	/^int sfs_truncate(sfs_unit* fs, off_t file, size_t new_size)$/;"	f
+sfs_unit	include/sfs/unit.h	/^} sfs_unit;$/;"	t	typeref:struct:__anon13
+sfs_unlink	lib/sfs/sfs_unlink.c	/^off_t sfs_unlink(sfs_unit* fs, const char* filepath)$/;"	f
+sfs_version	include/sfs/mbr.h	/^        uint8_t  sfs_version;             $/;"	m	struct:mbr_t
+sfs_write	lib/sfs/sfs_write.c	/^ssize_t sfs_write(sfs_unit* fs, off_t file, $/;"	f
+size	include/bdev/blockdev.h	/^        size_t size;$/;"	m	struct:block_dev_t
+size	include/sfs/entry.h	/^        uint64_t size;$/;"	m	struct:__anon11
+size	include/sfs/entry.h	/^        uint64_t size;$/;"	m	struct:__anon8
+size	include/sfs/unit.h	/^        size_t size;$/;"	m	struct:__anon14
+size	include/sfs/unit.h	/^        size_t size;$/;"	m	struct:__anon15
+start	lib/sfs/alloc.c	/^        int start;$/;"	m	struct:pair	file:
+start_block	include/sfs/entry.h	/^        uint64_t start_block;$/;"	m	struct:__anon11
+start_block	include/sfs/entry.h	/^        uint64_t start_block;$/;"	m	struct:__anon8
+start_block	include/sfs/entry.h	/^        uint64_t start_block;$/;"	m	struct:__anon9
+start_checksum	include/sfs/mbr.h	5;"	d
+start_entry	include/sfs/entry.h	/^} __attribute__((packed)) start_entry;$/;"	t	typeref:struct:__anon5
+strcmp	lib/sfs/utils.c	/^int strcmp(const char* s1, const char* s2)$/;"	f
+strcpy	lib/sfs/utils.c	/^char* strcpy(char* dest, const char* src)$/;"	f
+strlen	lib/sfs/utils.c	/^size_t strlen(const char* s)$/;"	f
+strncmp	lib/sfs/utils.c	/^int strncmp(const char* s1, const char* s2, size_t n)$/;"	f
+strncpy	lib/sfs/utils.c	/^char* strncpy(char* dest, const char* src, size_t n)$/;"	f
+strnlen	lib/sfs/utils.c	/^size_t strnlen(const char* s, size_t n)$/;"	f
+time	include/sfs/unit.h	/^        time_t time;$/;"	m	struct:__anon13
+time	include/sfs/unit.h	/^        uint64_t time;$/;"	m	struct:__anon14
+time	include/sfs/unit.h	/^        uint64_t time;$/;"	m	struct:__anon15
+time_stamp	include/mksfs/mksfs.h	/^        time_t time_stamp;$/;"	m	struct:sfs_options
+time_stamp	include/sfs/entry.h	/^        uint64_t time_stamp;$/;"	m	struct:__anon10
+time_stamp	include/sfs/entry.h	/^        uint64_t time_stamp;$/;"	m	struct:__anon11
+time_stamp	include/sfs/entry.h	/^        uint64_t time_stamp;$/;"	m	struct:__anon4
+time_stamp	include/sfs/entry.h	/^        uint64_t time_stamp;$/;"	m	struct:__anon7
+time_stamp	include/sfs/entry.h	/^        uint64_t time_stamp;$/;"	m	struct:__anon8
+time_stamp	include/sfs/mbr.h	/^        uint64_t time_stamp;              \/* Seconds since 1 Jan 1970 *\/ $/;"	m	struct:mbr_t
+total_block	include/mksfs/mksfs.h	/^        size_t total_block;$/;"	m	struct:sfs_options
+total_size	include/sfs/mbr.h	/^        uint64_t total_size;              \/* In blocks *\/$/;"	m	struct:mbr_t
+try_expand	lib/sfs/fsutils.c	/^int try_expand(sfs_unit* fs, off_t off, size_t new_size, entry* entr)$/;"	f
+try_to_lock_image	fuse/main.c	/^static int try_to_lock_image(char* path) $/;"	f	file:
+type	include/sfs/unit.h	/^        flag_t type;$/;"	m	struct:__anon14
+type	include/sfs/unit.h	/^        flag_t type;$/;"	m	struct:__anon15
+unusable_entry	include/sfs/entry.h	/^} __attribute__((packed)) unusable_entry;$/;"	t	typeref:struct:__anon9
+unused	include/sfs/entry.h	/^        uint8_t unused[9];$/;"	m	struct:__anon9
+unused_entry	include/sfs/entry.h	/^} __attribute__((packed)) unused_entry;$/;"	t	typeref:struct:__anon6
+update	include/sfs/unit.h	/^static inline void update(sfs_unit* fs)$/;"	f
+usage	fuse/main.c	/^static void usage(unsigned status) $/;"	f	file:
+usage	mksfs/main.c	/^static void usage(unsigned status) $/;"	f	file:
+vino_dump	fuse/inode.c	/^int vino_dump(vino_t vino) $/;"	f
+vino_t	include/fuse/inode.h	/^typedef uint64_t vino_t;$/;"	t
+vol_ident	include/sfs/unit.h	/^        off_t vol_ident;$/;"	m	struct:__anon13
+vol_ident_entry	include/sfs/entry.h	/^} __attribute__((packed)) vol_ident_entry;$/;"	t	typeref:struct:__anon4
+vol_label	include/sfs/entry.h	/^        uint8_t vol_label[52];$/;"	m	struct:__anon4
+write	include/bdev/blockdev.h	/^        size_t (*write) (struct block_dev_t* dev, buf_t* buf,$/;"	m	struct:block_dev_t
+write_data	lib/sfs/io.c	/^size_t write_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)$/;"	f
+write_entry	lib/sfs/io.c	/^size_t write_entry(blockdev* dev, off_t offset, entry* entry)$/;"	f

@@ -159,38 +159,26 @@ static void* fuse_sfs_init()
                 fprintf(stderr, "Image is not a regular "
                                 "file or block device!\n");
                 close(temp_fd);
-                free(fdev);
-                free(bdev);
-                free(sfs_description);
-                exit(EXIT_FAILURE);
+                goto FAIL_EXIT;
         }
 
         lseek(temp_fd, offsetof(struct mbr_t, block_size), SEEK_SET);
         if (read(temp_fd, &bs_p2, 1) == 0) {
                 perror("");
                 close(temp_fd);
-                free(fdev);
-                free(bdev);
-                free(sfs_description);
-                exit(EXIT_FAILURE);
+                goto FAIL_EXIT;
         }
         bs = 128 << bs_p2;
         if (bs <= 128) {
                 fprintf(stderr, "Block size isn't valid!\n");
                 close(temp_fd);
-                free(fdev);
-                free(bdev);
-                free(sfs_description);
-                exit(EXIT_FAILURE);
+                goto FAIL_EXIT;
         }
         lseek(temp_fd, offsetof(struct mbr_t, total_size), SEEK_SET);
         if (read(temp_fd, &file_size, 8) == 0) {
                 perror("");
                 close(temp_fd);
-                free(fdev);
-                free(bdev);
-                free(sfs_description);
-                exit(EXIT_FAILURE);
+                goto FAIL_EXIT;
         }
         close(temp_fd);
         SFS_TRACE("BS: %lu, FS: %lu", bs, file_size);
@@ -202,27 +190,21 @@ static void* fuse_sfs_init()
         fdev->filename = imagefile;
         if (blockdev_init(bdev) != 0) {
                 perror("");
-                free(fdev);
-                free(bdev);
-                free(sfs_description);
-                exit(EXIT_FAILURE);
+                goto FAIL_EXIT;
         }
 
         if (sfs_init(sfs_description, bdev) < 0) {
                 fprintf(stderr, "The image was corrupted.\n");
                 bdev->release(bdev);
-                free(bdev->dev_data);
-                free(bdev);
-                free(sfs_description);
-                exit(EXIT_FAILURE);
+                goto FAIL_EXIT;
         }
 
         if (dstat.st_mtime - sfs_description->time > 1) {
                 fprintf(stderr, "Modification time and timestamp are differ\n"
                                 "WE DON'T GIVE ANY WARRANTY!\n");
-                fprintf(stderr, "ha mtime %lu time %lu", 
+                /*fprintf(stderr, "ha mtime %lu time %lu", 
                                 dstat.st_mtime,
-                                sfs_description->time);
+                                sfs_description->time);*/
                 while (Answer != 'Y' && Answer != 'n') {
                         fprintf(stderr, "Do you want to continue?\n"
                                         "Press [Y/n]\n");
@@ -230,10 +212,7 @@ static void* fuse_sfs_init()
                 }
                 if (Answer == 'n') {
                         bdev->release(bdev);
-                        free(bdev->dev_data);
-                        free(bdev);
-                        free(sfs_description);
-                        exit(EXIT_FAILURE);
+                        goto FAIL_EXIT;
                 }
         }
         else
@@ -250,10 +229,7 @@ static void* fuse_sfs_init()
                                 "completely broken\n"
                                 "Filesystem cannot be mounted\n");
                 bdev->release(bdev);
-                free(bdev->dev_data);
-                free(bdev);
-                free(sfs_description);
-                exit(EXIT_FAILURE);
+                goto FAIL_EXIT;
         }
  
         used_size = scan_used_space(sfs_description, &entr);
@@ -272,10 +248,7 @@ static void* fuse_sfs_init()
                 }
                 if (Answer == 'N') {
                         bdev->release(bdev);
-                        free(bdev->dev_data);
-                        free(bdev);
-                        free(sfs_description);
-                        exit(EXIT_FAILURE);
+                        goto FAIL_EXIT;
                 }
         }
         fix_non_del_file(sfs_description, &entr);
@@ -286,23 +259,22 @@ static void* fuse_sfs_init()
         if (inode_map_create() == -1) {
                 sfs_release(sfs_description);
                 sfs_description->bdev->release(sfs_description->bdev);
-                free(sfs_description->bdev->dev_data);
-                free(sfs_description->bdev);
-                free(sfs_description);
-                exit(EXIT_FAILURE);
+                goto FAIL_EXIT;
         }
         if (index_lock_init() == -1) {
                 inode_map_delete();
                 sfs_release(sfs_description);
                 sfs_description->bdev->release(sfs_description->bdev);
-                free(sfs_description->bdev->dev_data);
-                free(sfs_description->bdev);
-                free(sfs_description);
-                exit(EXIT_FAILURE);
+                goto FAIL_EXIT;
         }
 
         SFS_TRACE("Init finished");
         return NULL;
+FAIL_EXIT:
+        free(fdev);
+        free(bdev);
+        free(sfs_description);
+        exit(EXIT_FAILURE);
 }
 
 static void fuse_sfs_destroy(void* param)
@@ -321,21 +293,20 @@ static int fuse_sfs_getattr(const char* path, struct stat *stbuf)
 {
         SFS_TRACE("GETATTR path %s", path);
         path++;
-        char* cpath = new_path(path);
         vino_t vino;
         sfs_attr attr;
         pino_t pino;
-        //index_rdlock();
-        if ((pino = sfs_open(sfs_description, cpath)) == 0)
+        if ((pino = sfs_open(sfs_description, path)) == 0) {
                 return -sfs_errno;
+        }
         if ((vino = get_vino(pino)) == 0) {
                 if ((vino = pino_add(pino)) == 0) {
-                        free(cpath);
                         return -ENOMEM;
                 }
         }
-        if (sfs_getattr(sfs_description, pino, &attr) != 0)
+        if (sfs_getattr(sfs_description, pino, &attr) != 0) {
                 return -sfs_errno;
+        }
         stbuf->st_dev  = getpid();
         stbuf->st_ino  = vino;
         stbuf->st_size = attr.size;
@@ -350,7 +321,6 @@ static int fuse_sfs_getattr(const char* path, struct stat *stbuf)
                           S_IROTH;
         stbuf->st_uid = getuid();
         stbuf->st_gid = getgid();
-        free(cpath);
         return 0;
 }
 
@@ -358,20 +328,17 @@ static int fuse_sfs_open(const char* path, struct fuse_file_info* fi)
 {
         SFS_TRACE("OPEN path %s", path);
         path++;
-        char* cpath = new_path(path);
         vino_t vino = 0;
-        pino_t pino = sfs_open(sfs_description, cpath);
+        pino_t pino = sfs_open(sfs_description, path);
         if (pino == 0)
                 return -sfs_errno;
 
         if ((vino = get_vino(pino)) == 0) {
                 if ((vino = pino_add(pino)) == 0) {
-                        free(cpath);
                         return -ENOMEM;
                 }
         }
         set_openbit(vino);
-        free(cpath);
         fi->fh = vino;
         vino_dump(vino);
         return 0;
@@ -468,17 +435,14 @@ static int fuse_sfs_unlink(const char* path)
 {
         SFS_TRACE("UNLINK path%s", path);
         path++;
-        char* cpath = new_path(path);
         pino_t pino = 0;
         vino_t vino = 0;
      
-        if ((pino = sfs_unlink(sfs_description, cpath)) == 0) {
-                free(cpath);
+        if ((pino = sfs_unlink(sfs_description, path)) == 0) {
                 return -sfs_errno;
         }
 
         if ((vino = get_vino(pino)) == 0) {
-                free(cpath);
                 if (sfs_delete(sfs_description, pino) == -1)
                         return -sfs_errno;
                 return 0;
@@ -491,7 +455,6 @@ static int fuse_sfs_unlink(const char* path)
                 set_pino(vino, 0);
         }  
 
-        free(cpath);
         return 0;
 }
 
@@ -499,12 +462,9 @@ static int fuse_sfs_rmdir(const char* path)
 {
         SFS_TRACE("%s", "");
         path++;
-        char* cpath = new_path(path);
-        if (sfs_rmdir(sfs_description, cpath) == -1) {
-                free(cpath);
+        if (sfs_rmdir(sfs_description, path) == -1) {
                 return -1;
         }
-        free(cpath);
         return 0;
 }
 
@@ -520,60 +480,49 @@ static int fuse_sfs_rename(const char* from, const char* to)
         vino_t vino = 0;
         sfs_attr attr; 
         if ((old_pino = sfs_open(sfs_description, cpath_from)) == 0) {
-                free(cpath_from);
-                free(cpath_to);
-                return -sfs_errno;
+                goto RENAME_EXIT;
         }
 
         if (sfs_getattr(sfs_description, old_pino, &attr) == -1) {
-                return -sfs_errno;
+                goto RENAME_EXIT;
         }
 
         if (attr.type == DIR_ITER_TYPE) {
                 if (sfs_rmdir(sfs_description, cpath_from) == -1) {
-                        free(cpath_from);
-                        free(cpath_to);
-                        return -sfs_errno;
+                        goto RENAME_EXIT;
                 }
                 if (sfs_mkdir(sfs_description, cpath_to) == -1) {
-                        free(cpath_from);
-                        free(cpath_to);
-                        return -sfs_errno;
+                        goto RENAME_EXIT;
                 }
                 if ((pino = sfs_open(sfs_description, cpath_to)) == 0) {
-                        free(cpath_from);
-                        free(cpath_to);
-                        return -sfs_errno;
+                        goto RENAME_EXIT;
                 }
         } else {
 
                 if ((pino = sfs_rename(sfs_description, old_pino, 
                                        cpath_to)) == 0) {
-                        free(cpath_from);
-                        free(cpath_to);
-                        return -sfs_errno;
+                        goto RENAME_EXIT;
                 }
         }
 
         if (old_pino == pino) {
-                free(cpath_from);
-                free(cpath_to);
-                return 0;
+                sfs_errno = 0;
+                goto RENAME_EXIT;
         }
         if ((vino = get_vino(old_pino)) == 0) {
                 if ((vino = pino_add(pino)) == 0) {
-                        free(cpath_from);
-                        free(cpath_to);
-                        return -ENOMEM;
+                        sfs_errno = ENOMEM;
+                        goto RENAME_EXIT;
                 }
-                free(cpath_from);
-                free(cpath_to);
-                return 0;
+                sfs_errno = 0;
+                goto RENAME_EXIT;
         }
         set_pino(vino, pino);
+        sfs_errno = 0;
+RENAME_EXIT:
         free(cpath_from);
         free(cpath_to);
-        return 0;
+        return -sfs_errno;
 }
 
 static int fuse_sfs_read(const char* path, char *buf, size_t size, 
@@ -598,7 +547,7 @@ static int fuse_sfs_write(const char* path, const char *buf, size_t size,
         if ((num_byte = sfs_write(sfs_description, get_pino(fi->fh),
                              (char*)buf, size, offset)) == -1) {
                 fprintf(stderr, "WRITE ERROR %d\n", sfs_errno);
-                return (-1)*sfs_errno;
+                return -sfs_errno;
         }
         return num_byte;
 }
@@ -612,15 +561,15 @@ static int fuse_sfs_mknod(const char* path, mode_t mode, dev_t rdev)
         char* cpath = new_path(path);
 
         if (mode & S_IFREG && sfs_creat(sfs_description, cpath) == -1) {
-                free(cpath);
-                return -sfs_errno;
+                goto MKNOD_EXIT;
         }
         if (mode & S_IFDIR && sfs_creat(sfs_description, cpath) == -1) {
-                free(cpath);
-                return -sfs_errno;
+                goto MKNOD_EXIT;
         }
+        sfs_errno = 0;
+MKNOD_EXIT:
         free(cpath);
-        return 0;
+        return -sfs_errno;
 }
 
 static int fuse_sfs_chmod(const char* path, mode_t mode)
@@ -641,14 +590,12 @@ static int fuse_sfs_utime(const char* path, struct utimbuf* buf)
 static int fuse_sfs_truncate(const char* path, off_t length) 
 {
         path++;
-        char* cpath = new_path(path);
-        pino_t pino = sfs_open(sfs_description, cpath);
+        pino_t pino = sfs_open(sfs_description, path);
         SFS_TRACE("TRUNCATE path %s Physical inode %lu", path, pino);
         if (pino == 0)
                 return -sfs_errno;
         if (sfs_truncate(sfs_description, pino, length) != 0)
                 return -sfs_errno;
-        free(cpath);
         return 0;
 }
 
@@ -666,12 +613,11 @@ static int fuse_sfs_opendir(const char* path, struct fuse_file_info* fi)
 {
         SFS_TRACE("OPENDIR path %s", path);
         path++;
-        char* cpath = new_path(path);
         vino_t vino;
         sfs_attr attr;
 
-        pino_t pino = sfs_open(sfs_description, cpath);
-        fprintf(stderr, "PINOOOOOO %lu\n", pino);
+        pino_t pino = sfs_open(sfs_description, path);
+        //fprintf(stderr, "PINOOOOOO %lu\n", pino);
         if (pino == 0)
                 return -sfs_errno;
 
@@ -679,18 +625,16 @@ static int fuse_sfs_opendir(const char* path, struct fuse_file_info* fi)
                 return -sfs_errno;
 
         if (attr.type == FILE_ITER_TYPE) {
-                fprintf(stderr, "$$$$$OGO\n");
+                //fprintf(stderr, "$$$$$OGO\n");
                 return -ENOTDIR;
         }
 
         if ((vino = get_vino(pino)) == 0) {
                 if ((vino = pino_add(pino)) == 0) {
-                        free(cpath);
                         return -ENOMEM;
                 }
         }
         fi->fh  = vino;
-        free(cpath);
         return 0;
 }
 
@@ -701,10 +645,13 @@ static int fuse_sfs_releasedir(const char* path, struct fuse_file_info* fi)
         char* cpath = new_path(path);
         vino_t vino = fi->fh;
         if (get_dirty(vino) == 1) {
-                if (sfs_rmdir(sfs_description, cpath) == -1)
+                if (sfs_rmdir(sfs_description, cpath) == -1) {
+                        free(cpath);
                         return -sfs_errno;
+                }
                 set_pino(vino, 0);
         }
+        free(cpath);
         return 0;                
        
 }
@@ -820,7 +767,7 @@ int main(int argc, char* argv[]) {
         /* Disabling multi-threads operation helps to avoid race condition */
         nargv[2] = "-s";
         /* Enable foreground mode for saving value of semaphores */
-        nargv[3] = "-d";
+        nargv[3] = "-f";
         imagefile = argv[optind];
         /*
          * Call FUSE

@@ -8,7 +8,7 @@ typedef uint64_t vino_t;
 typedef uint64_t pino_t;
 
 #define INODE_MAP_DEFAULT_SIZE 1024
-#define INODE_DEBUG
+//#define INODE_DEBUG
 
 typedef struct {
         /* Physical inode */
