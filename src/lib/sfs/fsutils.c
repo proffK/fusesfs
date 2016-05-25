@@ -539,9 +539,9 @@ int del_file_list_add(sfs_unit* fs, entry* entr, uint64_t start, uint64_t end)
                         write_entry(fs->bdev, next, entr);
                         return 0;
                 } else {
-                        write_entry(fs->bdev, fs->del_begin, entr);
+                        write_entry(fs->bdev, next, entr);
+                        return 0;
                 }
-                return 0;
         } else if (prev != 0) {
                 read_entry(fs->bdev, prev, entr);
                 AS_DFILE(entr)->end_block = end;
@@ -559,7 +559,7 @@ int del_file_list_add(sfs_unit* fs, entry* entr, uint64_t start, uint64_t end)
                 NEXT_DEL(entr) = fs->del_begin;
                 AS_DFILE(entr)->start_block = start;
                 AS_DFILE(entr)->end_block = end;
-                strcpy((char*) AS_DFILE(entr)->name, "free"); 
+                strcpy((char*) AS_DFILE(entr)->name, "*free"); 
                 // TODO: start and end block in free name;
                 write_entry(fs->bdev, new, entr);
                 SFS_TRACE("Allocated entry:"

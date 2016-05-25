@@ -23,7 +23,7 @@ ssize_t sfs_write(sfs_unit* fs, off_t file,
 
         if (read_entry(fs->bdev, file, &entr) == -1) {
                 SET_ERRNO(EIO);
-                return 0;
+                return -1;
         }
 
         old_size = AS_FILE(&entr)->size;

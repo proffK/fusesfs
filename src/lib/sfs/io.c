@@ -135,6 +135,7 @@ size_t write_data(blockdev* dev, off_t offset, uint8_t* data, size_t size)
         }
         memcpy(buf, data, size);
         if (dev->write(dev, buf, bsize, bnum) == -1) {
+                SET_ERRNO(EIO);
                 IO_TRACE("Writing failed\n");   
                 return -1;
         }
