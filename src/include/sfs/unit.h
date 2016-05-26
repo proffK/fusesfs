@@ -56,6 +56,11 @@ static inline void update(sfs_unit* fs)
         fs->time = get_time();
 }
 
+static inline int fs_sync(sfs_unit* fs)
+{
+        return fs->bdev->sync(fs->bdev);
+}
+
 int sfs_init(sfs_unit* fs, blockdev* bdev);
 
 off_t sfs_open(sfs_unit* fs, const char* filepath);

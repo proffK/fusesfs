@@ -144,6 +144,7 @@ int sfs_init(sfs_unit* fs, blockdev* bdev)
                 SET_ERRNO(EIO);
                 return -1;
         }
+        fs_sync(fs);
         SET_ERRNO(0);
         return 0;
 }

@@ -232,10 +232,10 @@ static void* fuse_sfs_init()
                         bdev->release(bdev);
                         goto FAIL_EXIT;
                 }
-        }
-        else
+        } else {
                 fprintf(stderr, "Modification time and timestamp "
                                 "are equal\n");
+        }
 
         read_data(sfs_description->bdev, 0, (uint8_t*) &mbr, 
                   sizeof(struct mbr_t));

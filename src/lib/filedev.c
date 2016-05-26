@@ -73,6 +73,11 @@ static int filedev_release(blockdev* bdev)
         return 0;
 }
 
+static int filedev_sync(blockdev* bdev) 
+{
+        return fsync(FDEV->fd);
+}
+
 static size_t filedev_read(blockdev* bdev, buf_t* buf, 
                            size_t buf_size, bnum_t block_num)
 {
@@ -217,6 +222,7 @@ blockdev* filedev_create(blockdev* bdev, filedev_data* fdev,
         bdev->read = filedev_read;
         bdev->write = filedev_write;
         bdev->release = filedev_release;
+        bdev->sync = filedev_sync;
 
         return bdev;
 }

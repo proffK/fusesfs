@@ -33,6 +33,7 @@ struct block_dev_t {
         size_t (*write) (struct block_dev_t* dev, buf_t* buf,
                          size_t buf_size, bnum_t block_num);
         int (*init) (struct block_dev_t* dev);
+        int (*sync) (struct block_dev_t* dev);
         int (*release) (struct block_dev_t* dev);
 };
 
