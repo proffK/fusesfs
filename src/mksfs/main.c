@@ -1,3 +1,21 @@
+/*
+<FUSE-based implementation of SFS (Simple File System)>
+    Copyright (C) 2016  <Edgar Kaziahmedov>
+
+ This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #define _GNU_SOURCE
 #include <config.h>
 
@@ -134,6 +152,9 @@ int main(int argc, char* argv[]) {
         if (index_size_s == NULL) {
                 double buf = DEFAULT_INDEX_PERCENT * file_size / 100L;
                 index_size = (size_t)round(buf);
+                /* If index_size > 10M */
+                if (index_size > (10 * 1024 * 1024))
+                        index_size = 10 * 1024 * 1024;
 
         } else {
                 index_size = convert_size(index_size_s, file_size);
@@ -227,7 +248,8 @@ static void usage(unsigned status)
                 printf("Usage: mksfs [OPTIONS] FILE\n");
                 printf("\n"
                        "-m, --metadata    Size of metadata part              \n"
-                       "                  Default 5%% of file size.          \n"
+                       "                  Default 5%% of file size, but no   \n"
+                       "                  more than 10M.                     \n"
                        "-b, --block-size  Number of bytes in each block.     \n"
                        "                  It should be more than 128B and    \n"
                        "                  block_size = 2^N, N is integer.    \n"
